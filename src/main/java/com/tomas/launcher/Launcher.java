@@ -1,13 +1,14 @@
-package com.tomas.codeGenerator;
+package com.tomas.launcher;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
-public class CodeGeneratorApplication {
+@SpringBootApplication(scanBasePackages = "com.tomas")
+public class Launcher {
 
 	public static void main(String[] args) {
-		SpringApplication.run(CodeGeneratorApplication.class, args);
+		SpringApplication.run(Launcher.class, args);
+
 	}
 
 }
