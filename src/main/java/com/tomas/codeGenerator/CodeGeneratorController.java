@@ -6,17 +6,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/code-generator/chat")
+@RequestMapping("/code-generator")
 public class CodeGeneratorController {
 
-    private final LLMService llmService;
+    private final LLMCodeService llmCodeService;
 
-    public CodeGeneratorController(LLMService llmService) {
-        this.llmService = llmService;
+    public CodeGeneratorController(LLMCodeService llmCodeService) {
+        this.llmCodeService = llmCodeService;
     }
 
     @GetMapping
-    public String chat(@RequestParam String message) {
-        return llmService.getChatGptResponse(message);
+    public String generateCode(@RequestParam String message) {
+        return llmCodeService.getCodeResponse(message);
     }
 }

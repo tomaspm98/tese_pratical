@@ -1,6 +1,5 @@
-package com.tomas.codeGenerator;
+package com.tomas.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data

@@ -1,4 +1,4 @@
-package com.tomas.codeGenerator;
+package com.tomas.model;
 
 import lombok.Data;
 
