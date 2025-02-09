@@ -16,10 +16,11 @@ public class LLMSpecsService {
     private static final String apiKey = "8c61b03e1c9750e780cbc123679523d551be0171c65f32458966d831f6503552";
     private static final RestTemplate restTemplate = new RestTemplate();
     private static final String codeRequest = "Generate specifications (and only the specifications) to the natural language problem presented below:\n";
+    private static final String llmModel = "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
 
     public String getSpecsResponse(String userMessage) {
         String fullMessage = codeRequest + userMessage;
-        Request request = new Request("meta-llama/Llama-3.3-70B-Instruct-Turbo-Free", List.of(new Message("user", codeRequest + fullMessage)));
+        Request request = new Request(llmModel, List.of(new Message("user", codeRequest + fullMessage)));
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

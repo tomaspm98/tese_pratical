@@ -1,23 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
+import "./App.css";
 
 function App() {
+  const [text, setText] = useState("");
+
+  const handleSubmit = async () => {
+    try {
+      const fullURL = "http://localhost:8080/code-generator?message=" + text;
+      const response = await fetch(fullURL, {
+        method: "GET",
+        mode: "cors",
+      });
+      console.log(response)
+      const data = await response.text();
+      console.log(data)
+      //alert(`Response: ${data}`);
+    } catch (error) {
+      console.error(error);
+      alert("Error submitting data");
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <div className="rectangle">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Write a sentence..."
+          className="text-input"
+        />
+        <button onClick={handleSubmit} className="submit-button">Submit</button>
+      </div>
     </div>
   );
 }
