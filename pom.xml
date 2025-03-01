@@ -59,6 +59,12 @@
 			<systemPath>${project.basedir}/lib/org.alloytools.alloy.dist.jar</systemPath>
 		</dependency>
 
+		<dependency>
+			<groupId>org.python</groupId>
+			<artifactId>jython</artifactId>
+			<version>2.7.4</version>
+		</dependency>
+
 
 	</dependencies>
 	<build>

@@ -15,7 +15,7 @@ public class LLMCodeService {
     private static final String url = "https://api.together.xyz/v1/chat/completions";
     private static final String apiKey = "8c61b03e1c9750e780cbc123679523d551be0171c65f32458966d831f6503552";
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String codeRequest = "Generate code in Python (and only the code) to the natural language problem presented below:\n";
+    private static final String codeRequest = "Generate code in Python (and only code without comments and examples and main function) to the natural language problem presented below:\n";
     private static final String llmModel = "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
 
     public String getCodeResponse(String userMessage) {
@@ -33,6 +33,7 @@ public class LLMCodeService {
         if (response.getBody() == null || response.getBody().getChoices().isEmpty()) {
             return "I'm sorry, I don't understand.";
         } else {
+
             return response.getBody().getChoices().get(0).getMessage().getContent();
         }
     }
