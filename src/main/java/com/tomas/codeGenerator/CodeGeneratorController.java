@@ -2,6 +2,8 @@ package com.tomas.codeGenerator;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/code-generator")
 @CrossOrigin(origins = "http://localhost:3000")
@@ -14,7 +16,7 @@ public class CodeGeneratorController {
     }
 
     @GetMapping
-    public String generateCode(@RequestParam String message) {
+    public String generateCode(@RequestParam String message) throws IOException {
         return llmCodeService.getCodeResponse(message);
     }
 }

@@ -7,6 +7,9 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -15,10 +18,10 @@ public class LLMCodeService {
     private static final String url = "https://api.together.xyz/v1/chat/completions";
     private static final String apiKey = "8c61b03e1c9750e780cbc123679523d551be0171c65f32458966d831f6503552";
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String codeRequest = "Generate code in Python (and only code without comments and examples and main function) to the natural language problem presented below:\n";
+    private static final String codeRequest = "Generate code in Python (and only code without comments and examples) to the natural language problem presented below, including the main function that receives the inputs to run the method from sys:\n";
     private static final String llmModel = "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
 
-    public String getCodeResponse(String userMessage) {
+    public String getCodeResponse(String userMessage) throws IOException {
         String fullMessage = codeRequest + userMessage;
         Request request = new Request(llmModel, List.of(new Message("user", codeRequest + fullMessage)));
 
@@ -33,9 +36,18 @@ public class LLMCodeService {
         if (response.getBody() == null || response.getBody().getChoices().isEmpty()) {
             return "I'm sorry, I don't understand.";
         } else {
-
+            writeToFile(response.getBody().getChoices().get(0).getMessage().getContent());
             return response.getBody().getChoices().get(0).getMessage().getContent();
         }
+    }
+
+    public void writeToFile(String code) throws IOException {
+        File file = new File("src/main/resources/pythonCode.py");
+        FileWriter filewriter = new FileWriter(file);
+        code = code.replaceAll("^```python\\n?", ""); // Removes ```python at the start
+        code = code.replaceAll("\\n?```$", "");
+        filewriter.write(code);
+        filewriter.close();
     }
 
 }
