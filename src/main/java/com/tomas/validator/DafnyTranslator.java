@@ -19,6 +19,7 @@ public class DafnyTranslator {
         }
         if (ensuresMatcher.find()) {
             specs.put("postcondition", ensuresMatcher.group(1).trim());
+
         }
 
         return specs;
@@ -31,5 +32,17 @@ public class DafnyTranslator {
             return methodMatcher.group(1).trim();
         }
         return null;
+    }
+
+    public static void main(String[] args) {
+        DafnyTranslator dafnyTranslator = new DafnyTranslator();
+        String code = "method sum(a: int, b: int) returns (c: int)\n" +
+                "requires a >= 0 && b >= 0\n" +
+                "ensures c == a + b\n" +
+                "{\n" +
+                "c := a + b;\n" +
+                "}";
+        System.out.println(dafnyTranslator.extractSpecs(code));
+        System.out.println(dafnyTranslator.extractMethodSignature(code));
     }
 }
