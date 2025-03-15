@@ -1,22 +1,23 @@
 package com.tomas.specificationsGenerator;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.tomas.validator.DafnyToAlloyConverter;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/specs-generator")
 public class SpecsGeneratorController {
 
     private final LLMSpecsService llmSpecsService;
+    private final DafnyToAlloyConverter dafnyToAlloyConverter;
 
-    public SpecsGeneratorController(LLMSpecsService llmSpecsService) {
+    public SpecsGeneratorController(LLMSpecsService llmSpecsService, DafnyToAlloyConverter dafnyToAlloyConverter) {
         this.llmSpecsService = llmSpecsService;
+        this.dafnyToAlloyConverter = dafnyToAlloyConverter;
     }
 
-    @GetMapping
-    public String generateSpecs(@RequestParam String message) {
+    @PostMapping
+    public String generateSpecs(@RequestBody String message) {
+
         return llmSpecsService.getSpecsResponse(message);
     }
 }

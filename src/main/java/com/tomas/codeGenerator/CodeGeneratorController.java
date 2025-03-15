@@ -1,6 +1,7 @@
 package com.tomas.codeGenerator;
 
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 
@@ -15,8 +16,8 @@ public class CodeGeneratorController {
         this.llmCodeService = llmCodeService;
     }
 
-    @GetMapping
-    public String generateCode(@RequestParam String message) throws IOException {
+    @PostMapping
+    public String generateCode(@RequestBody String message) throws IOException {
         return llmCodeService.getCodeResponse(message);
     }
 }

@@ -1,10 +1,18 @@
 package com.tomas.validator;
 
+import org.springframework.web.client.RestTemplate;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DafnyToAlloyConverter {
+
+    private final DafnyTranslator dafnyTranslator;
+
+    public DafnyToAlloyConverter(DafnyTranslator dafnyTranslator) {
+        this.dafnyTranslator = dafnyTranslator;
+    }
 
     public String constructPrecondition(Map<String, String> specs, List<String> inputVars) {
         String precondition = specs.get("precondition");
@@ -69,7 +77,9 @@ public class DafnyToAlloyConverter {
         return null;
     }
 
-    public String convertToAlloy(String methodSignature, Map<String, String> dafnySpecs) {
+    public String convertToAlloy(String code) {
+        String methodSignature = dafnyTranslator.extractMethodSignature(code);
+        Map<String, String> dafnySpecs = dafnyTranslator.extractSpecs(code);
 
         Map<String, List<String>> variables = extractVariables(methodSignature);
         String methodName = extractMethodName(methodSignature);
@@ -104,25 +114,9 @@ public class DafnyToAlloyConverter {
             all i: Input | %s
         }
 
-        fact Postconditions {
-            all i: Input, o: Output | %s
-        }
-
-        run {} for 50
+        run {} for 70 but 6 Int
         """, methodName, inputSig, outputSig, precondition, postcondition);
     }
 
-    public static void main(String[] args) {
-        DafnyToAlloyConverter converter = new DafnyToAlloyConverter();
-        String code = "method Add(a: int, b: int) returns (result: int)\n" +
-                "  requires a != 0 || b != 0\n" +
-                "  ensures result == a + b\n" +
-                "{\n" +
-                "  result := a + b;\n" +
-                "}";
-        Map<String, String> specs = new DafnyTranslator().extractSpecs(code);
-        String methodSignature = new DafnyTranslator().extractMethodSignature(code);
-        System.out.println(converter.convertToAlloy(methodSignature, specs));
-    }
 
 }
