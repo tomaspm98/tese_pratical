@@ -17,7 +17,6 @@ public class SpecsGeneratorController {
 
     @PostMapping
     public String generateSpecs(@RequestBody String message) {
-
         return llmSpecsService.getSpecsResponse(message);
     }
 }

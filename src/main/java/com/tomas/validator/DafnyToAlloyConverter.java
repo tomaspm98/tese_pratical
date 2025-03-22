@@ -1,7 +1,5 @@
 package com.tomas.validator;
 
-import org.springframework.web.client.RestTemplate;
-
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

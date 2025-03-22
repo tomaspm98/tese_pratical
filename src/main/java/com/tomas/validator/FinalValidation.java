@@ -16,10 +16,10 @@ public class FinalValidation {
     private final CodeRunner codeRunner;
     private final RestTemplate restTemplate;
 
-    public FinalValidation(CodeRunner codeRunner, DafnyTranslator DafnyTranslator, RestTemplate restTemplate) {
+    public FinalValidation(CodeRunner codeRunner, DafnyTranslator dafnyTranslator, RestTemplate restTemplate) {
         this.codeRunner = codeRunner;
-        this.dafnyTranslator = DafnyTranslator;
         this.restTemplate = restTemplate;
+        this.dafnyTranslator = dafnyTranslator;
     }
 
     public double conditionParser(Set<Map<String, Integer>> inputsFromAlloy, String message) throws IOException, ScriptException {
@@ -27,15 +27,15 @@ public class FinalValidation {
         int counter = 0;
         String postcondition = dafnyTranslator.getSpecs().get("postcondition");
         ScriptEngineManager manager = new ScriptEngineManager();
-        ScriptEngine engine = manager.getEngineByName("nashorn");
-        int output;
+        ScriptEngine engine = manager.getEngineByName("python");
         for (Map<String, Integer> input : inputsFromAlloy) {
-            output = codeRunner.getOutputFromCode(input);
+            String postcondition_replaced = postcondition;
+            int output = codeRunner.getOutputFromCode(input);
             for (Map.Entry<String, Integer> entry : input.entrySet()) {
-                postcondition = postcondition.replace(entry.getKey(), entry.getValue().toString());
+                postcondition_replaced = postcondition_replaced.replace(entry.getKey(), entry.getValue().toString());
             }
-            postcondition = postcondition.replaceAll("[a-zA-Z]+", String.valueOf(output));
-            if ((boolean) engine.eval(postcondition)) {
+            postcondition_replaced = postcondition_replaced.replaceAll("[a-zA-Z]+", String.valueOf(output));
+            if ((boolean) engine.eval(postcondition_replaced)) {
                 counter++;
             }
         }

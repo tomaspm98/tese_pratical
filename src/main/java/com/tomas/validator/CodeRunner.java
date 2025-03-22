@@ -1,12 +1,9 @@
 package com.tomas.validator;
 
-import org.springframework.web.client.RestTemplate;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CodeRunner {
 
