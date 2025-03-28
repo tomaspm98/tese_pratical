@@ -15,7 +15,7 @@ public class LLMSpecsService {
     private static final String url = "https://api.together.xyz/v1/chat/completions";
     private static final String apiKey = "8c61b03e1c9750e780cbc123679523d551be0171c65f32458966d831f6503552";
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String codeRequest = "Generate specifications in Dafny (only the dafny code) containing pre-conditions, post-conditions and the code to the natural language problem presented below, without using int.minValue and int.MaxValue that aren't valid and only containing valid alloy syntax on Dafny:\n";
+    private static final String codeRequest = "Generate specifications in Dafny (only the dafny code) containing pre-conditions (if existent), post-conditions and the code to the natural language problem presented below, without using int.minValue and int.MaxValue that aren't valid and only containing valid alloy syntax on Dafny:\n";
     private static final String llmModel = "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
 
     public String getSpecsResponse(String userMessage) {

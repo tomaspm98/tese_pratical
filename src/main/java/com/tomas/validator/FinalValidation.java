@@ -35,6 +35,7 @@ public class FinalValidation {
                 postcondition_replaced = postcondition_replaced.replace(entry.getKey(), entry.getValue().toString());
             }
             postcondition_replaced = postcondition_replaced.replaceAll("[a-zA-Z]+", String.valueOf(output));
+            postcondition_replaced = postcondition_replaced.replaceAll(";$", "");
             if ((boolean) engine.eval(postcondition_replaced)) {
                 counter++;
             }

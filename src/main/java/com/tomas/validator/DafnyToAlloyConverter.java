@@ -14,6 +14,10 @@ public class DafnyToAlloyConverter {
 
     public String constructPrecondition(Map<String, String> specs, List<String> inputVars) {
         String precondition = specs.get("precondition");
+        if (precondition == null) {
+            return "1=1";
+        }
+
         for (String var : inputVars) {
             precondition = precondition.replaceAll("\\b" + var + "\\b", "i." + var);
         }
@@ -91,13 +95,6 @@ public class DafnyToAlloyConverter {
         inputSig.setLength(inputSig.length() - 1);
         inputSig.append("\n}\n");
 
-        StringBuilder outputSig = new StringBuilder("sig Output {");
-        for (String var : outputVars) {
-            outputSig.append("\n    ").append(var).append(": Int,");
-        }
-        outputSig.setLength(outputSig.length() - 1);
-        outputSig.append("\n}\n");
-
         String precondition = constructPrecondition(dafnySpecs, inputVars);
         String postcondition = constructPostcondition(dafnySpecs, outputVars, inputVars);
 
@@ -106,14 +103,13 @@ public class DafnyToAlloyConverter {
         module %s
 
         %s
-        %s
-
+        
         fact Preconditions {
             all i: Input | %s
         }
 
         run {} for 70 but 6 Int
-        """, methodName, inputSig, outputSig, precondition, postcondition);
+        """, methodName, inputSig, precondition, postcondition);
     }
 
 
