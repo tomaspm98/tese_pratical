@@ -1,13 +1,12 @@
 import sys
 
-def subtract_integers(a, b):
-    return a - b
+def find_perimeter(side_length):
+    return 4 * side_length
 
 def main():
-    a = int(sys.argv[1])
-    b = int(sys.argv[2])
-    result = subtract_integers(a, b)
-    print(result)
+    side_length = int(sys.argv[1])
+    perimeter = find_perimeter(side_length)
+    print(perimeter)
 
 if __name__ == "__main__":
     main()
