@@ -25,7 +25,7 @@ public class AlloyRunner {
     }
 
     public Set<Map<String, Integer>> runAlloyModel(String code) {
-        String alloyModel = dafnyToAlloyConverter.convertToAlloy(code);
+        String alloyModel = dafnyToAlloyConverter.convertToAlloyRun(code);
         Set<Map<String, Integer>> inputList = new HashSet<>();
 
         try {
