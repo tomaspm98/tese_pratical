@@ -44,6 +44,8 @@ public class DafnyToAlloyConverter {
         }
         original = original.replaceAll( "==", "=");
         evaluation = evaluation.replaceAll("==", "=");
+        original = original.replaceAll( ";", "");
+        evaluation = evaluation.replaceAll(";", "");
 
         assertion.append("assert ").append("assertion_").append(random).append(" {\n");
         assertion.append("    ").append("all i:Input | ").append(original).append(" <=> ").append(evaluation).append("\n");
@@ -53,7 +55,7 @@ public class DafnyToAlloyConverter {
         return Map.of("assertion", assertion.toString(), "check", checkAssertion);
     }
 
-    public Map<String, String> constructCheckEvaluationOutput(String original, String evaluation, List<String> outputVars) {
+    public Map<String, String> constructCheckEvaluationOutput(String original, String evaluation, List<String> outputVars, List<String> inputVars) {
         StringBuilder assertion = new StringBuilder();
         int random = (int) (Math.random()*1000);
         for (String var : outputVars) {
@@ -61,11 +63,29 @@ public class DafnyToAlloyConverter {
             evaluation = evaluation.replaceAll("\\b" + var + "\\b", "o." + var);
         }
 
+        for (String var : inputVars) {
+            original = original.replaceAll("\\b" + var + "\\b", "i." + var);
+            evaluation = evaluation.replaceAll("\\b" + var + "\\b", "i." + var);
+        }
+
+        String finalOriginal = original;
+        String finalEvaluation = evaluation;
+        boolean hasInputVars = inputVars.stream().anyMatch(var ->
+                finalOriginal.contains("i." + var) || finalEvaluation.contains("i." + var)
+        );
+
         original = original.replaceAll( "==", "=");
         evaluation = evaluation.replaceAll("==", "=");
+        original = original.replaceAll( ";", "");
+        evaluation = evaluation.replaceAll(";", "");
 
-        assertion.append("assert ").append("assertion_").append(random).append(" {\n");
-        assertion.append("    ").append("all o:Output | ").append(original).append(" <=> ").append(evaluation).append("\n");
+
+        assertion.append("assert ").append("assertion_").append(random).append(" {\n").append("    ");
+        if (hasInputVars){
+            assertion.append("all o:Output, i:Input | ").append(original).append(" <=> ").append(evaluation).append("\n");
+        } else {
+            assertion.append("all o:Output | ").append(original).append(" <=> ").append(evaluation).append("\n");
+        }
         assertion.append("}\n");
 
         String checkAssertion = "check assertion_" + random + " for 70 but 6 Int\n";

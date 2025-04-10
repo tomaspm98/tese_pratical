@@ -1,5 +1,6 @@
 package com.tomas.evaluation;
 
+import com.tomas.model.InputResponse;
 import com.tomas.validator.DafnyToAlloyConverter;
 import com.tomas.validator.DafnyTranslator;
 import edu.mit.csail.sdg.alloy4.A4Reporter;
@@ -13,6 +14,11 @@ import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
 import kodkod.engine.satlab.SATFactory;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.interfaces.IExpr;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -27,33 +33,53 @@ public class Evaluation {
 
     DafnyTranslator dafnyTranslator = new DafnyTranslator();
     DafnyToAlloyConverter dafnyToAlloyConverter = new DafnyToAlloyConverter(dafnyTranslator);
+    private int totalCounter = 0;
+    private int counterCorrectCode = 0;
+    private int counterCorrectSpecs = 0;
+    private int counterConsistencyDetections = 0;
 
     public boolean evaluateIndividual(CodeTask codeTask) throws IOException, InterruptedException {
-        /*RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate();
         String url = "http://localhost:8080/input";
 
-        String message = codeTask.getText();
+        String message = codeTask.getText() + "(integer problem)";
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(message, headers);
         ResponseEntity<InputResponse> response = restTemplate.exchange(url, HttpMethod.POST, entity, InputResponse.class);
 
         String codeCleaned = response.getBody().getCodeGenerated().replaceAll("(?s)def main\\(\\):.*", "");
         String specs = response.getBody().getSpecsGenerated();
-        */String codeCleaned = "import sys\n" +
+        /*String codeCleaned = "import sys\n" +
                 "\n" +
                 "def find_perimeter(side_length):\n" +
                 "    return 4 * side_length\n";
         String specs = "```dafny\n" +
                 "method findPerimeterOfSquare(side: int) returns (perimeter: int)\n" +
-                "  requires side >= 0\n" +
-                "  ensures perimeter == 4 * side\n" +
+                "  requires side > 0\n" +
+                "  ensures perimeter == 4 / side\n" +
                 "{\n" +
                 "  perimeter := 4 * side;\n" +
                 "}\n" +
-                "```";
+                "```";*/
 
-        evaluateSpecs(specs, codeTask.getTask_id());
-        evaluateCode(codeCleaned, codeTask.getTest_list());
+        if (evaluateSpecs(specs, codeTask.getTask_id())) {
+            System.out.println("Specs evaluation passed!");
+            counterCorrectSpecs++;
+        } else {
+            System.err.println("Specs evaluation failed!");
+        }
+
+        if (evaluateCode(codeCleaned, codeTask.getTest_list())) {
+            System.out.println("Code evaluation passed!");
+            counterCorrectCode++;
+        } else {
+            System.err.println("Code evaluation failed!");
+        }
+        if (response.getBody().getResult() == 1.0 ) {
+            counterConsistencyDetections++;
+        }
+
+        totalCounter++;
 
         return false;
     }
@@ -133,30 +159,41 @@ public class Evaluation {
             }
         }
 
-        /*List<Map<String, String>> checks = new ArrayList<>();
+        List<Map<String, String>> checks = new ArrayList<>();
         for (String key : specsConditions.keySet()) {
             if (key.equals("precondition")) {
-                checks.add(dafnyToAlloyConverter.constructCheckEvaluationInput(specsConditions.get(key), specsConditionsFile.get(key), params));
+                checks.add(dafnyToAlloyConverter.constructCheckEvaluationInput(convertToAlloySyntaxDivAndMul(specsConditions.get(key)),convertToAlloySyntaxDivAndMul(specsConditionsFile.get(key)), params));
             } else if (key.equals("postcondition")) {
-                checks.add(dafnyToAlloyConverter.constructCheckEvaluationOutput(specsConditions.get(key), specsConditionsFile.get(key), returns));
+                checks.add(dafnyToAlloyConverter.constructCheckEvaluationOutput(convertToAlloySyntaxDivAndMul(specsConditions.get(key)), convertToAlloySyntaxDivAndMul(specsConditionsFile.get(key)), returns, params));
             }
-        }*/
-        EvalUtilities eval = new EvalUtilities();
-        IExpr expr1 = eval.evaluate(specsConditions.get("postcondition"));
-        IExpr expr2 = eval.evaluate(specsConditionsFile.get("postcondition"));
-        if (expr1.equals(expr2)) {
-            System.out.println("Precondition is valid");
-        } else {
-            System.out.println("Precondition is invalid");
         }
 
+        boolean result = runAlloyCheck(specs, checks);
+        if (result) {
+            System.out.println("Alloy check passed!");
+            return true;
+        } else {
+            System.err.println("Alloy check failed!");
+            return false;
+        }
 
-
-
-        return false;
     }
 
-    /*public boolean runAlloyCheck(String code, List<Map<String, String>> checks) {
+    public String convertToAlloySyntaxDivAndMul(String expr) {
+        expr = expr.replaceAll("\\s+", "");
+
+        while (expr.contains("*")) {
+            expr = expr.replaceFirst("(\\w+)\\*(\\w+)", "mul[$1, $2]");
+        }
+
+        while (expr.contains("/")) {
+            expr = expr.replaceFirst("(\\w+)\\/(\\w+)", "div[$1, $2]");
+        }
+
+        return expr;
+    }
+
+    public boolean runAlloyCheck(String code, List<Map<String, String>> checks) {
         StringBuilder alloyModel = new StringBuilder(dafnyToAlloyConverter.convertToAlloyCheck(code));
         for (Map<String, String> check : checks) {
             alloyModel.append(check.get("assertion")).append("\n");
@@ -173,27 +210,23 @@ public class Evaluation {
             A4Options options = new A4Options();
             options.solver = SATFactory.get("minisat");
 
-            // Get the check command (instead of a run command)
             Command cmd = world.getAllCommands().get(0);
 
-            // Execute the check command
             A4Solution solution = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), cmd, options);
 
-            // If the check is satisfiable, it means the check holds (i.e., it is true)
-            // The check failed (the property doesn't hold)
-            result = solution.satisfiable();  // The check passed (the property holds)
+            result = !solution.satisfiable();  // The check passed (the property holds)
 
         } catch (Err e) {
             System.err.println("Alloy error: " + e.getMessage());
         }
 
         return result;
-    }*/
+    }
 
     public static List<String> extractVariableNames(String input) {
         List<String> names = new ArrayList<>();
 
-        if (input.trim().isEmpty()) return names;  // Return empty list if no content
+        if (input.trim().isEmpty()) return names;
 
         String[] parts = input.split(",");
 
@@ -220,9 +253,12 @@ public class Evaluation {
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        Evaluation evaluation = new Evaluation();
         JsonReader jsonReader = new JsonReader();
         List<CodeTask> listCode = jsonReader.readJsonlFile("src/main/java/com/tomas/evaluation/mbpp.jsonl");
-        Evaluation evaluation = new Evaluation();
+        /*for (CodeTask codeTask : listCode) {
+            evaluation.evaluateIndividual(codeTask);
+        }*/
         boolean eval = evaluation.evaluateIndividual(listCode.getFirst());
     }
 }

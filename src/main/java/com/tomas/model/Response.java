@@ -3,13 +3,27 @@ package com.tomas.model;
 import java.util.List;
 
 public class Response {
-    private List<Choice> choices;
+    private String response;
+    private boolean done;
 
-    public List<Choice> getChoices() {
-        return choices;
+    public Response(String response, boolean done) {
+        this.response = response;
+        this.done = done;
     }
 
-    public void setChoices(List<Choice> choices) {
-        this.choices = choices;
+    public String getResponse() {
+        return response;
+    }
+
+    public void setResponse(String response) {
+        this.response = response;
+    }
+
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
     }
 }

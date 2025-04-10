@@ -1,12 +1,12 @@
-import sys
-
-def find_perimeter(side_length):
-    return 4 * side_length
+def calculate_perimeter(side):
+    return 4 * side
 
 def main():
-    side_length = int(sys.argv[1])
-    perimeter = find_perimeter(side_length)
-    print(perimeter)
+    import sys
+    if len(sys.argv) > 1:
+        side = int(sys.argv[1])
+        perimeter = calculate_perimeter(side)
+        print(perimeter)
 
 if __name__ == "__main__":
     main()

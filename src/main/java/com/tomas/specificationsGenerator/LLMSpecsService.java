@@ -12,28 +12,28 @@ import java.util.List;
 @Service
 public class LLMSpecsService {
 
-    private static final String url = "https://api.together.xyz/v1/chat/completions";
-    private static final String apiKey = "8c61b03e1c9750e780cbc123679523d551be0171c65f32458966d831f6503552";
+    private static final String url = "http://localhost:11434/api/generate";
+    //private static final String apiKey = "8c61b03e1c9750e780cbc123679523d551be0171c65f32458966d831f6503552";
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String codeRequest = "Generate specifications in Dafny (only the dafny code) containing pre-conditions (if existent), post-conditions and the code to the natural language problem presented below, without using int.minValue and int.MaxValue that aren't valid and only containing valid alloy syntax on Dafny:\n";
-    private static final String llmModel = "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
+    private static final String codeRequest = "Generate specifications in Dafny (only the code in Dafny language, the language is presented in https://dafny.org/), don't produce any natural language or code comments, only the code I ask you containing pre-conditions (represented with requires), post-conditions (represented with ensures) and the logic code to the natural language problem presented below, without using int.minValue and int.MaxValue that aren't valid and only containing valid alloy syntax on Dafny, and write only methods \n";
+    private static final String llmModel = "deepseek-coder-v2:16b";
 
     public String getSpecsResponse(String userMessage) {
         String fullMessage = codeRequest + userMessage;
-        Request request = new Request(llmModel, List.of(new Message("user", codeRequest + fullMessage)));
+        Request request = new Request(llmModel, codeRequest + fullMessage);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
+        //headers.setBearerAuth(apiKey);
 
         HttpEntity<Request> entity = new HttpEntity<>(request, headers);
 
         ResponseEntity<Response> response = restTemplate.exchange(url, HttpMethod.POST, entity, Response.class);
 
-        if (response.getBody() == null || response.getBody().getChoices().isEmpty()) {
+        if (response.getBody() == null || response.getBody().getResponse() == null) {
             return "I'm sorry, I don't understand.";
         } else {
-            return response.getBody().getChoices().get(0).getMessage().getContent();
+            return response.getBody().getResponse();
         }
     }
 
