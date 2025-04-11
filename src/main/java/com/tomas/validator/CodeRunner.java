@@ -7,16 +7,15 @@ import java.util.Map;
 
 public class CodeRunner {
 
-    public int getOutputFromCode(Map<String, Integer> inputsFromAlloy) throws IOException {
-        int result = Integer.MIN_VALUE;
+    public String getOutputFromCode(Map<String, Integer> inputsFromAlloy) throws IOException {
         Process process = getProcess(inputsFromAlloy);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                result = Integer.parseInt(line);
+                return line;
             }
         }
-        return result;
+        return null;
     }
 
     private Process getProcess(Map<String, Integer> inputsFromAlloy) throws IOException {

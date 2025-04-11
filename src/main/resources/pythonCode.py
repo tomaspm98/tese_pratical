@@ -1,12 +1,15 @@
-def calculate_perimeter(side):
-    return 4 * side
+import sys
+
+def has_opposite_sign(a, b):
+    return (a ^ b) < 0
 
 def main():
-    import sys
-    if len(sys.argv) > 1:
-        side = int(sys.argv[1])
-        perimeter = calculate_perimeter(side)
-        print(perimeter)
+    # Read input from command line arguments
+    a = int(sys.argv[1])
+    b = int(sys.argv[2])
+    
+    result = has_opposite_sign(a, b)
+    print(result)
 
 if __name__ == "__main__":
     main()

@@ -14,13 +14,14 @@ public class DafnyToAlloyConverter {
 
     public String constructPrecondition(Map<String, String> specs, List<String> inputVars) {
         String precondition = specs.get("precondition");
-        if (precondition == null) {
+        if (precondition == null || precondition.equals("true") || precondition.equals("true;")) {
             return "1=1";
         }
 
         for (String var : inputVars) {
             precondition = precondition.replaceAll("\\b" + var + "\\b", "i." + var);
         }
+        precondition = precondition.replaceAll(";", "");
         return precondition;
     }
 
@@ -32,6 +33,7 @@ public class DafnyToAlloyConverter {
         for (String var : inputVars) {
             postcondition = postcondition.replaceAll("\\b" + var + "\\b", "i." + var);
         }
+        postcondition = postcondition.replaceAll(";", "");
         return postcondition;
     }
 

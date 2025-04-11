@@ -7,6 +7,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 
@@ -30,11 +31,11 @@ public class FinalValidation {
         ScriptEngine engine = manager.getEngineByName("python");
         for (Map<String, Integer> input : inputsFromAlloy) {
             String postcondition_replaced = postcondition;
-            int output = codeRunner.getOutputFromCode(input);
+            String output = codeRunner.getOutputFromCode(input);
             for (Map.Entry<String, Integer> entry : input.entrySet()) {
                 postcondition_replaced = postcondition_replaced.replace(entry.getKey(), entry.getValue().toString());
             }
-            postcondition_replaced = postcondition_replaced.replaceAll("[a-zA-Z]+", String.valueOf(output));
+            postcondition_replaced = postcondition_replaced.replaceAll("[a-zA-Z]+", output);
             postcondition_replaced = postcondition_replaced.replaceAll(";$", "");
             if ((boolean) engine.eval(postcondition_replaced)) {
                 counter++;

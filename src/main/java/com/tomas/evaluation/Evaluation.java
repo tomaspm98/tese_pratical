@@ -37,8 +37,10 @@ public class Evaluation {
     private int counterCorrectCode = 0;
     private int counterCorrectSpecs = 0;
     private int counterConsistencyDetections = 0;
+    private boolean correctCode;
+    private boolean correctSpecs;
 
-    public boolean evaluateIndividual(CodeTask codeTask) throws IOException, InterruptedException {
+    public void evaluateIndividual(CodeTask codeTask) throws IOException, InterruptedException {
         RestTemplate restTemplate = new RestTemplate();
         String url = "http://localhost:8080/input";
 
@@ -61,27 +63,38 @@ public class Evaluation {
                 "  perimeter := 4 * side;\n" +
                 "}\n" +
                 "```";*/
-
         if (evaluateSpecs(specs, codeTask.getTask_id())) {
             System.out.println("Specs evaluation passed!");
+            correctSpecs = true;
             counterCorrectSpecs++;
         } else {
+            correctSpecs = false;
             System.err.println("Specs evaluation failed!");
         }
 
         if (evaluateCode(codeCleaned, codeTask.getTest_list())) {
             System.out.println("Code evaluation passed!");
+            correctCode = true;
             counterCorrectCode++;
         } else {
+            correctCode = false;
             System.err.println("Code evaluation failed!");
         }
-        if (response.getBody().getResult() == 1.0 ) {
+        if (!correctCode && !correctSpecs) {
+            System.out.println("Code and specs evaluation failed!");
+        } else if (correctSpecs && correctCode && response.getBody().getResult() == 1.0) {
+            System.out.println("Code and specs evaluation passed!");
             counterConsistencyDetections++;
+            totalCounter++;
+        } else if (correctSpecs && !correctCode && response.getBody().getResult() < 1.0) {
+            System.out.println("Code evaluation failed but specs evaluation passed!");
+            counterConsistencyDetections++;
+            totalCounter++;
+        } else if (!correctSpecs && correctCode && response.getBody().getResult() < 1.0) {
+            System.out.println("Code evaluation passed but specs evaluation failed!");
+            counterConsistencyDetections++;
+            totalCounter++;
         }
-
-        totalCounter++;
-
-        return false;
     }
 
     public boolean evaluateCode(String codeCleaned, List<String> codeTaskTestList) throws IOException, InterruptedException {
@@ -256,9 +269,9 @@ public class Evaluation {
         Evaluation evaluation = new Evaluation();
         JsonReader jsonReader = new JsonReader();
         List<CodeTask> listCode = jsonReader.readJsonlFile("src/main/java/com/tomas/evaluation/mbpp.jsonl");
-        /*for (CodeTask codeTask : listCode) {
+        for (CodeTask codeTask : listCode) {
             evaluation.evaluateIndividual(codeTask);
-        }*/
-        boolean eval = evaluation.evaluateIndividual(listCode.getFirst());
+        }
+        System.out.println(evaluation);
     }
 }
