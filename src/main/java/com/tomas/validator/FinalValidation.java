@@ -37,6 +37,8 @@ public class FinalValidation {
             }
             postcondition_replaced = postcondition_replaced.replaceAll("[a-zA-Z]+", output);
             postcondition_replaced = postcondition_replaced.replaceAll(";$", "");
+            postcondition_replaced = postcondition_replaced.replaceAll("\\s*&&\\s*\n", "and");
+            postcondition_replaced = postcondition_replaced.replaceAll("\\s*\\|\\|\\s*", "or");
             if ((boolean) engine.eval(postcondition_replaced)) {
                 counter++;
             }

@@ -163,10 +163,18 @@ public class Evaluation {
             List<String> returnsFile = extractVariableNames(returnsRaw);
 
             for (int i = 0; i < paramsFile.size(); i++) {
+                if (specsConditionsFile.get("precondition") == null) {
+                    specsConditionsFile.put("precondition", "");
+                    break;
+                }
                 String newPrecondition = specsConditionsFile.get("precondition").replaceAll(paramsFile.get(i), params.get(i));
                 specsConditionsFile.put("precondition", newPrecondition);
             }
-            for (int i =0; i<returnsFile.size(); i++) {
+            for (int i = 0; i < returnsFile.size(); i++) {
+                if (specsConditionsFile.get("postcondition") == null) {
+                    specsConditionsFile.put("postcondition", "");
+                    break;
+                }
                 String newPostcondition = specsConditionsFile.get("postcondition").replaceAll(returnsFile.get(i), returns.get(i));
                 specsConditionsFile.put("postcondition", newPostcondition);
             }
@@ -175,7 +183,7 @@ public class Evaluation {
         List<Map<String, String>> checks = new ArrayList<>();
         for (String key : specsConditions.keySet()) {
             if (key.equals("precondition")) {
-                checks.add(dafnyToAlloyConverter.constructCheckEvaluationInput(convertToAlloySyntaxDivAndMul(specsConditions.get(key)),convertToAlloySyntaxDivAndMul(specsConditionsFile.get(key)), params));
+                checks.add(dafnyToAlloyConverter.constructCheckEvaluationInput(convertToAlloySyntaxDivAndMul(specsConditions.get(key)), convertToAlloySyntaxDivAndMul(specsConditionsFile.get(key)), params));
             } else if (key.equals("postcondition")) {
                 checks.add(dafnyToAlloyConverter.constructCheckEvaluationOutput(convertToAlloySyntaxDivAndMul(specsConditions.get(key)), convertToAlloySyntaxDivAndMul(specsConditionsFile.get(key)), returns, params));
             }
@@ -196,11 +204,11 @@ public class Evaluation {
         expr = expr.replaceAll("\\s+", "");
 
         while (expr.contains("*")) {
-            expr = expr.replaceFirst("(\\w+)\\*(\\w+)", "mul[$1, $2]");
+            expr = expr.replaceFirst("(\\w+|\\([^()]+\\))\\s*\\*\\s*(\\w+|\\([^()]+\\))", "mul[$1,$2]");
         }
 
         while (expr.contains("/")) {
-            expr = expr.replaceFirst("(\\w+)\\/(\\w+)", "div[$1, $2]");
+            expr = expr.replaceFirst("(\\w+|\\([^()]*\\))\\s*/\\s*(\\w+|\\([^()]*\\))", "div[$1, $2]");
         }
 
         return expr;
@@ -267,11 +275,13 @@ public class Evaluation {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Evaluation evaluation = new Evaluation();
-        JsonReader jsonReader = new JsonReader();
+        /*JsonReader jsonReader = new JsonReader();
         List<CodeTask> listCode = jsonReader.readJsonlFile("src/main/java/com/tomas/evaluation/mbpp.jsonl");
         for (CodeTask codeTask : listCode) {
             evaluation.evaluateIndividual(codeTask);
         }
         System.out.println(evaluation);
+    }*/
+        evaluation.convertToAlloySyntaxDivAndMul("result == n / 2");
     }
 }

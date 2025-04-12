@@ -1,15 +1,15 @@
-import sys
+import math
 
-def has_opposite_sign(a, b):
-    return (a ^ b) < 0
+def find_nth_tetrahedral(n):
+    return int(math.comb(n + 2, 3))
 
 def main():
-    # Read input from command line arguments
-    a = int(sys.argv[1])
-    b = int(sys.argv[2])
-    
-    result = has_opposite_sign(a, b)
-    print(result)
+    import sys
+    if len(sys.argv) == 2:
+        n = int(sys.argv[1])
+        print(find_nth_tetrahedral(n))
+    else:
+        print("Usage: python script.py <integer>")
 
 if __name__ == "__main__":
     main()

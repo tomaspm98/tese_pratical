@@ -22,6 +22,7 @@ public class DafnyToAlloyConverter {
             precondition = precondition.replaceAll("\\b" + var + "\\b", "i." + var);
         }
         precondition = precondition.replaceAll(";", "");
+        precondition = precondition.replaceAll("//.*", "");
         return precondition;
     }
 
@@ -34,6 +35,7 @@ public class DafnyToAlloyConverter {
             postcondition = postcondition.replaceAll("\\b" + var + "\\b", "i." + var);
         }
         postcondition = postcondition.replaceAll(";", "");
+        postcondition = postcondition.replaceAll("//.*", "");
         return postcondition;
     }
 
