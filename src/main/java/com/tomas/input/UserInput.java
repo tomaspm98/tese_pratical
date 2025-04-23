@@ -1,6 +1,7 @@
 package com.tomas.input;
 
 import com.tomas.model.InputResponse;
+import com.tomas.util.NullOutputException;
 import com.tomas.validator.AlloyRunner;
 import com.tomas.validator.FinalValidation;
 import org.springframework.web.bind.annotation.*;
@@ -31,9 +32,18 @@ public class UserInput {
     public InputResponse userInput(@RequestBody String message) throws IOException, ScriptException {
         String specs = restTemplate.postForObject("http://localhost:8080/specs-generator", message, String.class);
         Set<Map<String,Integer>> inputsFromAlloy = alloyRunner.runAlloyModel(specs);
-        Double result = finalValidation.conditionParser(inputsFromAlloy, message);
+
+        double result;
+        try {
+            result = finalValidation.conditionParser(inputsFromAlloy, message);
+        } catch (NullOutputException e) {
+            System.out.println("Retrying full flow due to: " + e.getMessage());
+            return userInput(message); // retry the whole pipeline once
+        }
+
         String code = Files.readString(Path.of("src/main/resources/pythonCode.py"));
         return new InputResponse(result, code, specs);
     }
+
 
 }

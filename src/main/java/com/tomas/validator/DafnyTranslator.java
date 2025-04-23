@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 public class DafnyTranslator {
 
     private Map<String, String> specs = new HashMap<>();
+    private String methodSignature;
 
     public Map<String, String> extractSpecs(String code) {
 
@@ -29,6 +30,7 @@ public class DafnyTranslator {
         Pattern methodPattern = Pattern.compile("(method\\s+.+)");
         Matcher methodMatcher = methodPattern.matcher(code);
         if (methodMatcher.find()) {
+            methodSignature = methodMatcher.group(1).trim();
             return methodMatcher.group(1).trim();
         }
         return null;
@@ -36,6 +38,10 @@ public class DafnyTranslator {
 
     public Map<String, String> getSpecs() {
         return specs;
+    }
+
+    public String getMethodSignature() {
+        return methodSignature;
     }
 
 }

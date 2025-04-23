@@ -1,17 +1,9 @@
 package com.tomas.evaluation;
 
 import com.tomas.model.InputResponse;
+import com.tomas.util.Util;
 import com.tomas.validator.DafnyToAlloyConverter;
 import com.tomas.validator.DafnyTranslator;
-import edu.mit.csail.sdg.alloy4.A4Reporter;
-import edu.mit.csail.sdg.alloy4.Err;
-import edu.mit.csail.sdg.ast.Command;
-import edu.mit.csail.sdg.parser.CompModule;
-import edu.mit.csail.sdg.parser.CompUtil;
-import edu.mit.csail.sdg.translator.A4Options;
-import edu.mit.csail.sdg.translator.A4Solution;
-import edu.mit.csail.sdg.translator.TranslateAlloyToKodkod;
-import kodkod.engine.satlab.SATFactory;
 import org.matheclipse.core.eval.EvalUtilities;
 import org.matheclipse.core.interfaces.IExpr;
 import org.springframework.http.HttpEntity;
@@ -51,18 +43,7 @@ public class Evaluation {
 
         String codeCleaned = response.getBody().getCodeGenerated().replaceAll("(?s)def main\\(\\):.*", "");
         String specs = response.getBody().getSpecsGenerated();
-        /*String codeCleaned = "import sys\n" +
-                "\n" +
-                "def find_perimeter(side_length):\n" +
-                "    return 4 * side_length\n";
-        String specs = "```dafny\n" +
-                "method findPerimeterOfSquare(side: int) returns (perimeter: int)\n" +
-                "  requires side > 0\n" +
-                "  ensures perimeter == 4 / side\n" +
-                "{\n" +
-                "  perimeter := 4 * side;\n" +
-                "}\n" +
-                "```";*/
+
         if (evaluateSpecs(specs, codeTask.getTask_id())) {
             System.out.println("Specs evaluation passed!");
             correctSpecs = true;
@@ -93,6 +74,9 @@ public class Evaluation {
         } else if (!correctSpecs && correctCode && response.getBody().getResult() < 1.0) {
             System.out.println("Code evaluation passed but specs evaluation failed!");
             counterConsistencyDetections++;
+            totalCounter++;
+        } else {
+            System.out.println("Consistency wrongly detected!");
             totalCounter++;
         }
     }
@@ -144,8 +128,8 @@ public class Evaluation {
             String paramsRaw = matcher.group(1);
             String returnsRaw = matcher.group(2);
 
-            params = extractVariableNames(paramsRaw);
-            returns = extractVariableNames(returnsRaw);
+            params = Util.extractVariableNames(paramsRaw);
+            returns = Util.extractVariableNames(returnsRaw);
         }
 
         String taskIdFile = "task_id_" + task_id + ".dfy";
@@ -159,8 +143,8 @@ public class Evaluation {
             String paramsRaw = matcherFile.group(1);
             String returnsRaw = matcherFile.group(2);
 
-            List<String> paramsFile = extractVariableNames(paramsRaw);
-            List<String> returnsFile = extractVariableNames(returnsRaw);
+            List<String> paramsFile = Util.extractVariableNames(paramsRaw);
+            List<String> returnsFile = Util.extractVariableNames(returnsRaw);
 
             for (int i = 0; i < paramsFile.size(); i++) {
                 if (specsConditionsFile.get("precondition") == null) {
@@ -168,7 +152,14 @@ public class Evaluation {
                     break;
                 }
                 String newPrecondition = specsConditionsFile.get("precondition").replaceAll(paramsFile.get(i), params.get(i));
+                newPrecondition = newPrecondition.replaceAll( ";", "");
+                newPrecondition = newPrecondition.replaceAll("(?i)\\bpow\\s*\\(([^,]+),\\s*([^)]+)\\)", "$1^$2");
                 specsConditionsFile.put("precondition", newPrecondition);
+                String newPreconditionOriginal = specsConditions.get("precondition").replaceAll(";", "");
+                String newPreconditionOriginal2 = newPreconditionOriginal.replaceAll("(?i)\\bpow\\s*\\(([^,]+),\\s*([^)]+)\\)", "$1^$2");
+                specsConditions.put("precondition", newPreconditionOriginal2);
+                String newPostcondition = specsConditionsFile.get("postcondition").replaceAll(paramsFile.get(i), params.get(i));
+                specsConditionsFile.put("postcondition", newPostcondition);
             }
             for (int i = 0; i < returnsFile.size(); i++) {
                 if (specsConditionsFile.get("postcondition") == null) {
@@ -176,88 +167,29 @@ public class Evaluation {
                     break;
                 }
                 String newPostcondition = specsConditionsFile.get("postcondition").replaceAll(returnsFile.get(i), returns.get(i));
+                newPostcondition = newPostcondition.replaceAll( ";", "");
+                newPostcondition = newPostcondition.replaceAll("(?i)\\bpow\\s*\\(([^,]+),\\s*([^)]+)\\)", "$1^$2");
                 specsConditionsFile.put("postcondition", newPostcondition);
+                String newPostconditionOriginal = specsConditions.get("postcondition").replaceAll(";", "");
+                String newPostconditionOriginal2 = newPostconditionOriginal.replaceAll("(?i)\\bpow\\s*\\(([^,]+),\\s*([^)]+)\\)", "$1^$2");
+                specsConditions.put("postcondition", newPostconditionOriginal2);
             }
         }
 
-        List<Map<String, String>> checks = new ArrayList<>();
-        for (String key : specsConditions.keySet()) {
-            if (key.equals("precondition")) {
-                checks.add(dafnyToAlloyConverter.constructCheckEvaluationInput(convertToAlloySyntaxDivAndMul(specsConditions.get(key)), convertToAlloySyntaxDivAndMul(specsConditionsFile.get(key)), params));
-            } else if (key.equals("postcondition")) {
-                checks.add(dafnyToAlloyConverter.constructCheckEvaluationOutput(convertToAlloySyntaxDivAndMul(specsConditions.get(key)), convertToAlloySyntaxDivAndMul(specsConditionsFile.get(key)), returns, params));
-            }
-        }
+        EvalUtilities eval = new EvalUtilities();
+        IExpr precondition1 = eval.evaluate(specsConditions.get("precondition"));
+        IExpr precondition2 = eval.evaluate(specsConditionsFile.get("precondition"));
+        IExpr postcondition1 = eval.evaluate(specsConditions.get("postcondition"));
+        IExpr postcondition2 = eval.evaluate(specsConditionsFile.get("postcondition"));
 
-        boolean result = runAlloyCheck(specs, checks);
-        if (result) {
-            System.out.println("Alloy check passed!");
+        if (precondition1.equals(precondition2) && postcondition1.equals(postcondition2)) {
+            System.out.println("Preconditions and postconditions are equivalent!");
             return true;
         } else {
-            System.err.println("Alloy check failed!");
+            System.err.println("Preconditions and postconditions are not equivalent!");
             return false;
         }
 
-    }
-
-    public String convertToAlloySyntaxDivAndMul(String expr) {
-        expr = expr.replaceAll("\\s+", "");
-
-        while (expr.contains("*")) {
-            expr = expr.replaceFirst("(\\w+|\\([^()]+\\))\\s*\\*\\s*(\\w+|\\([^()]+\\))", "mul[$1,$2]");
-        }
-
-        while (expr.contains("/")) {
-            expr = expr.replaceFirst("(\\w+|\\([^()]*\\))\\s*/\\s*(\\w+|\\([^()]*\\))", "div[$1, $2]");
-        }
-
-        return expr;
-    }
-
-    public boolean runAlloyCheck(String code, List<Map<String, String>> checks) {
-        StringBuilder alloyModel = new StringBuilder(dafnyToAlloyConverter.convertToAlloyCheck(code));
-        for (Map<String, String> check : checks) {
-            alloyModel.append(check.get("assertion")).append("\n");
-        }
-        for (Map<String, String> check : checks) {
-            alloyModel.append(check.get("check"));
-        }
-
-        boolean result = false;
-
-        try {
-            A4Reporter rep = new A4Reporter();
-            CompModule world = CompUtil.parseEverything_fromString(rep, alloyModel.toString());
-            A4Options options = new A4Options();
-            options.solver = SATFactory.get("minisat");
-
-            Command cmd = world.getAllCommands().get(0);
-
-            A4Solution solution = TranslateAlloyToKodkod.execute_command(rep, world.getAllReachableSigs(), cmd, options);
-
-            result = !solution.satisfiable();  // The check passed (the property holds)
-
-        } catch (Err e) {
-            System.err.println("Alloy error: " + e.getMessage());
-        }
-
-        return result;
-    }
-
-    public static List<String> extractVariableNames(String input) {
-        List<String> names = new ArrayList<>();
-
-        if (input.trim().isEmpty()) return names;
-
-        String[] parts = input.split(",");
-
-        for (String part : parts) {
-            String[] pair = part.trim().split(":");
-            if (pair.length > 0) {
-                names.add(pair[0].trim());
-            }
-        }
-        return names;
     }
 
     public String getMethodName(String code) {
@@ -266,7 +198,7 @@ public class Evaluation {
 
         String methodName = "";
         if (matcher.find()) {
-            methodName = matcher.group(1); // Capture group 1 contains the method name
+            methodName = matcher.group(1);
         }
 
         return methodName;
@@ -275,13 +207,15 @@ public class Evaluation {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         Evaluation evaluation = new Evaluation();
-        /*JsonReader jsonReader = new JsonReader();
+        JsonReader jsonReader = new JsonReader();
         List<CodeTask> listCode = jsonReader.readJsonlFile("src/main/java/com/tomas/evaluation/mbpp.jsonl");
         for (CodeTask codeTask : listCode) {
             evaluation.evaluateIndividual(codeTask);
         }
-        System.out.println(evaluation);
-    }*/
-        evaluation.convertToAlloySyntaxDivAndMul("result == n / 2");
+        System.out.println("Consistency detections: " + evaluation.counterConsistencyDetections);
+        System.out.println("Total evaluations: " + evaluation.totalCounter);
+        System.out.println("Correct code evaluations: " + evaluation.counterCorrectCode);
+        System.out.println("Correct specs evaluations: " + evaluation.counterCorrectSpecs);
     }
 }
+

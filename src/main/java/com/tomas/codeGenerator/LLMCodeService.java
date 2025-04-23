@@ -18,7 +18,7 @@ public class LLMCodeService {
     private static final String url = "http://localhost:11434/api/generate";
     //private static final String apiKey = "8c61b03e1c9750e780cbc123679523d551be0171c65f32458966d831f6503552";
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String codeRequest = "Generate code in Python (and only code without comments and examples) to the natural language problem presented below, including just the auxiliar function to solve the problem and the main function (defined with def main():, that just calls the auxiliar function and prints its return value (don't include any additional logic neither output formatting to it)) that receives the inputs to run the method from sys, and don't use any natural language on the response:\n";
+    private static final String codeRequest = "Generate code in Python (and only code without comments and examples) to the natural language problem presented below, including just the auxiliar function to solve the problem and the main function (defined with def main():, that just calls the auxiliar function and prints its return value (don't include any additional logic neither output formatting to it)) that receives the inputs to run the method from sys, and don't use any natural language on the response. Also, always write the script so that it always uses command-line arguments (i.e sys.argv) to get input and don't use input():\n";
     private static final String llmModel = "deepseek-coder-v2:16b";
 
     public String getCodeResponse(String userMessage) throws IOException {
