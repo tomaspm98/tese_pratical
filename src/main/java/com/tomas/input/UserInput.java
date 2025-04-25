@@ -39,6 +39,8 @@ public class UserInput {
         } catch (NullOutputException e) {
             System.out.println("Retrying full flow due to: " + e.getMessage());
             return userInput(message); // retry the whole pipeline once
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
         String code = Files.readString(Path.of("src/main/resources/pythonCode.py"));

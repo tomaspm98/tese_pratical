@@ -16,10 +16,12 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Evaluation {
 
@@ -45,7 +47,7 @@ public class Evaluation {
         String specs = response.getBody().getSpecsGenerated();
 
         if (evaluateSpecs(specs, codeTask.getTask_id())) {
-            System.out.println("Specs evaluation passed!");
+            System.out.println("Specs evaluation passed! Problem nr" + (totalCounter+1));
             correctSpecs = true;
             counterCorrectSpecs++;
         } else {
@@ -117,11 +119,12 @@ public class Evaluation {
         }
     }
 
-    public boolean evaluateSpecs(String specs, int task_id) throws IOException {
+    public boolean evaluateSpecs(String specs, int task_id) throws IOException, InterruptedException {
         Map<String, String> specsConditions = dafnyTranslator.extractSpecs(specs);
         String methodSignature = dafnyTranslator.extractMethodSignature(specs);
         List<String> params = new ArrayList<>();
         List<String> returns = new ArrayList<>();
+        String variables = "";
 
         Matcher matcher = Pattern.compile("method\\s+\\w+\\s*\\(([^)]*)\\)\\s+returns\\s*\\(([^)]*)\\)").matcher(methodSignature);
         if (matcher.find()) {
@@ -130,6 +133,7 @@ public class Evaluation {
 
             params = Util.extractVariableNames(paramsRaw);
             returns = Util.extractVariableNames(returnsRaw);
+            variables = paramsRaw + ", " + returnsRaw;
         }
 
         String taskIdFile = "task_id_" + task_id + ".dfy";
@@ -152,12 +156,9 @@ public class Evaluation {
                     break;
                 }
                 String newPrecondition = specsConditionsFile.get("precondition").replaceAll(paramsFile.get(i), params.get(i));
-                newPrecondition = newPrecondition.replaceAll( ";", "");
-                newPrecondition = newPrecondition.replaceAll("(?i)\\bpow\\s*\\(([^,]+),\\s*([^)]+)\\)", "$1^$2");
                 specsConditionsFile.put("precondition", newPrecondition);
                 String newPreconditionOriginal = specsConditions.get("precondition").replaceAll(";", "");
-                String newPreconditionOriginal2 = newPreconditionOriginal.replaceAll("(?i)\\bpow\\s*\\(([^,]+),\\s*([^)]+)\\)", "$1^$2");
-                specsConditions.put("precondition", newPreconditionOriginal2);
+                specsConditions.put("precondition", newPreconditionOriginal);
                 String newPostcondition = specsConditionsFile.get("postcondition").replaceAll(paramsFile.get(i), params.get(i));
                 specsConditionsFile.put("postcondition", newPostcondition);
             }
@@ -168,28 +169,20 @@ public class Evaluation {
                 }
                 String newPostcondition = specsConditionsFile.get("postcondition").replaceAll(returnsFile.get(i), returns.get(i));
                 newPostcondition = newPostcondition.replaceAll( ";", "");
-                newPostcondition = newPostcondition.replaceAll("(?i)\\bpow\\s*\\(([^,]+),\\s*([^)]+)\\)", "$1^$2");
                 specsConditionsFile.put("postcondition", newPostcondition);
                 String newPostconditionOriginal = specsConditions.get("postcondition").replaceAll(";", "");
-                String newPostconditionOriginal2 = newPostconditionOriginal.replaceAll("(?i)\\bpow\\s*\\(([^,]+),\\s*([^)]+)\\)", "$1^$2");
-                specsConditions.put("postcondition", newPostconditionOriginal2);
+                specsConditions.put("postcondition", newPostconditionOriginal);
             }
         }
 
-        EvalUtilities eval = new EvalUtilities();
-        IExpr precondition1 = eval.evaluate(specsConditions.get("precondition"));
-        IExpr precondition2 = eval.evaluate(specsConditionsFile.get("precondition"));
-        IExpr postcondition1 = eval.evaluate(specsConditions.get("postcondition"));
-        IExpr postcondition2 = eval.evaluate(specsConditionsFile.get("postcondition"));
+        return equivalentConditions(variables, specsConditions.get("precondition"), specsConditionsFile.get("precondition")) && equivalentConditions(variables, specsConditions.get("postcondition"), specsConditionsFile.get("postcondition"));
+    }
 
-        if (precondition1.equals(precondition2) && postcondition1.equals(postcondition2)) {
-            System.out.println("Preconditions and postconditions are equivalent!");
-            return true;
-        } else {
-            System.err.println("Preconditions and postconditions are not equivalent!");
-            return false;
-        }
+    public boolean equivalentConditions(String variables, String conditionGenerated, String conditionFile) throws IOException, InterruptedException {
+        String code = generate(variables, conditionGenerated, conditionFile);
+        Path dafnyFile = write(code);
 
+        return verify(dafnyFile);
     }
 
     public String getMethodName(String code) {
@@ -202,6 +195,70 @@ public class Evaluation {
         }
 
         return methodName;
+    }
+
+    public String generate(String variables, String cond1, String cond2) {
+        String paramNames = extractParamNames(variables);
+        return """
+            lemma CheckEquivalence()
+              ensures forall %s :: Cond1(%s) <==> Cond2(%s)
+            {
+              forall %s
+                ensures Cond1(%s) <==> Cond2(%s)
+              {
+                if Cond1(%s) {
+                  assert Cond2(%s);
+                }
+                if Cond2(%s) {
+                  assert Cond1(%s);
+                }
+              }
+            }
+
+            function Cond1(%s): bool {
+              %s
+            }
+
+            function Cond2(%s): bool {
+              %s
+            }
+            """
+                .formatted(
+                        variables, paramNames, paramNames, // ensures
+                        variables, paramNames, paramNames, // forall block
+                        paramNames, paramNames, paramNames, paramNames, // body
+                        variables, cond1, // Cond1 def
+                        variables, cond2  // Cond2 def
+                );
+    }
+
+    private String extractParamNames(String declaration) {
+        return Arrays.stream(declaration.split(","))
+                .map(String::trim)
+                .map(s -> s.split(":")[0].trim())
+                .collect(Collectors.joining(", "));
+    }
+
+    public Path write(String content) throws IOException {
+        Path file = Files.createTempFile("equiv-check", ".dfy");
+        Files.writeString(file, content);
+        return file;
+    }
+
+    public boolean verify(Path dafnyFile) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(
+                "dotnet",
+                "C:\\Users\\Tomas Maciel\\.vscode\\extensions\\dafny-lang.ide-vscode-3.4.4\\out\\resources\\4.10.0\\github\\dafny\\Dafny.dll",
+                "verify",
+                dafnyFile.toAbsolutePath().toString()
+        );
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+
+        String output = new String(process.getInputStream().readAllBytes());
+        process.waitFor();
+
+        return output.contains("verified, 0 errors");
     }
 
 

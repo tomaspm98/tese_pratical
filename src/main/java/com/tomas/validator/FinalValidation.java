@@ -8,6 +8,8 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,7 +30,7 @@ public class FinalValidation {
         this.dafnyTranslator = dafnyTranslator;
     }
 
-    public double conditionParser(Set<Map<String, Integer>> inputsFromAlloy, String message) throws IOException, ScriptException {
+    public double conditionParser(Set<Map<String, Integer>> inputsFromAlloy, String message) throws IOException, ScriptException, InterruptedException {
         final int MAX_RETRIES = 3;
         int retries = 0;
         while (retries < MAX_RETRIES) {
@@ -37,8 +39,6 @@ public class FinalValidation {
             boolean allOutputsValid = true;
             String postcondition = dafnyTranslator.getSpecs().get("postcondition");
             String outputVarName = getOutputVariableName().get(0);
-            ScriptEngineManager manager = new ScriptEngineManager();
-            ScriptEngine engine = manager.getEngineByName("python");
             for (Map<String, Integer> input : inputsFromAlloy) {
                 String postcondition_replaced = postcondition;
                 String output = codeRunner.getOutputFromCode(input);
@@ -54,9 +54,10 @@ public class FinalValidation {
                 }
                 postcondition_replaced = postcondition_replaced.replaceAll(outputVarName, output);
                 postcondition_replaced = postcondition_replaced.replaceAll(";$", "");
-                postcondition_replaced = postcondition_replaced.replaceAll("\\s*&&\\s*\n", "and");
-                postcondition_replaced = postcondition_replaced.replaceAll("\\s*\\|\\|\\s*", "or");
-                if ((boolean) engine.eval(postcondition_replaced)) {
+                String dafnyCode = "method Check() {\n    assert " + postcondition_replaced + ";\n}";
+                Path file = Files.createTempFile("equiv-check", ".dfy");
+                Files.writeString(file, dafnyCode);
+                if (verify(file)) {
                     counter++;
                 }
             }
@@ -67,6 +68,22 @@ public class FinalValidation {
         }
         System.out.println("Output was null after " + MAX_RETRIES + " retries.");
         throw new NullOutputException("Output was null after " + MAX_RETRIES + " retries.");
+    }
+
+    public boolean verify(Path dafnyFile) throws IOException, InterruptedException {
+        ProcessBuilder pb = new ProcessBuilder(
+                "dotnet",
+                "C:\\Users\\Tomas Maciel\\.vscode\\extensions\\dafny-lang.ide-vscode-3.4.4\\out\\resources\\4.10.0\\github\\dafny\\Dafny.dll",
+                "verify",
+                dafnyFile.toAbsolutePath().toString()
+        );
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+
+        String output = new String(process.getInputStream().readAllBytes());
+        process.waitFor();
+
+        return output.contains("1 verified, 0 errors");
     }
 
 

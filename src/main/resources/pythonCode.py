@@ -1,26 +1,18 @@
 import sys
 
-def multiply(a, b):
-    result = 0
-    sign = -1 if (a < 0) ^ (b < 0) else 1
-    a, b = abs(a), abs(b)
-    for _ in range(b):
-        result += a
-    return sign * result
+def left_rotate(n, d):
+    return (n << d | n >> (32 - d)) & 0xFFFFFFFF
 
 def main():
     if len(sys.argv) != 3:
-        print("Usage: python script.py <int1> <int2>")
+        print("Usage: python script.py <number> <rotation>")
         sys.exit(1)
     
-    try:
-        int1 = int(sys.argv[1])
-        int2 = int(sys.argv[2])
-        product = multiply(int1, int2)
-        print(product)
-    except ValueError:
-        print("Both inputs must be integers.")
-        sys.exit(1)
+    number = int(sys.argv[1])
+    rotation = int(sys.argv[2])
+    
+    result = left_rotate(number, rotation)
+    print(result)
 
 if __name__ == "__main__":
     main()

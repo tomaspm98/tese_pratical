@@ -168,8 +168,12 @@ public class DafnyToAlloyConverter {
         fact Preconditions {
             all i: Input | %s
         }
+        
+        fact {
+            some Input
+        }
 
-        run {} for 70 but 6 Int
+        run {} for 1 but 10 Int
         """, methodName, inputSig, precondition, postcondition);
     }
 
