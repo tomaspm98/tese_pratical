@@ -1,6 +1,5 @@
 package com.tomas.evaluation;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class CodeTask {

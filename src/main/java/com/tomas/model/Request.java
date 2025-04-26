@@ -1,7 +1,5 @@
 package com.tomas.model;
 
-import java.util.List;
-
 public class Request {
     private String model;
     private String prompt;

@@ -1,7 +1,5 @@
 package com.tomas.model;
 
-import java.util.List;
-
 public class Response {
     private String response;
     private boolean done;

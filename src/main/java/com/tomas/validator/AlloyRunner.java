@@ -8,7 +8,6 @@ import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.*;
 import kodkod.engine.satlab.SATFactory;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -16,12 +15,10 @@ import java.util.*;
 public class AlloyRunner {
 
     private DafnyToAlloyConverter dafnyToAlloyConverter;
-    private RestTemplate restTemplate;
     private static final int NUMBER_OF_INPUTS_FROM_ALLOY = 10;
 
-    public AlloyRunner(DafnyToAlloyConverter dafnyToAlloyConverter, RestTemplate restTemplate) {
+    public AlloyRunner(DafnyToAlloyConverter dafnyToAlloyConverter) {
         this.dafnyToAlloyConverter = dafnyToAlloyConverter;
-        this.restTemplate = restTemplate;
     }
 
     public Set<Map<String, Integer>> runAlloyModel(String code) {

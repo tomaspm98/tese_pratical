@@ -1,18 +1,20 @@
 import sys
+import math
 
-def left_rotate(n, d):
-    return (n << d | n >> (32 - d)) & 0xFFFFFFFF
+def find_surface_area(radius):
+    return 4 * math.pi * radius**2
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python script.py <number> <rotation>")
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <radius>")
         sys.exit(1)
     
-    number = int(sys.argv[1])
-    rotation = int(sys.argv[2])
-    
-    result = left_rotate(number, rotation)
-    print(result)
+    try:
+        radius = int(sys.argv[1])
+        surface_area = find_surface_area(radius)
+        print(surface_area)
+    except ValueError:
+        print("Please provide a valid integer for the radius.")
 
 if __name__ == "__main__":
     main()

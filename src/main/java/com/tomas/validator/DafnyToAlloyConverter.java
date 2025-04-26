@@ -26,76 +26,6 @@ public class DafnyToAlloyConverter {
         return precondition;
     }
 
-    public String constructPostcondition(Map<String, String> specs, List<String> outputVars, List<String> inputVars) {
-        String postcondition = specs.get("postcondition");
-        for (String var : outputVars) {
-            postcondition = postcondition.replaceAll("\\b" + var + "\\b", "o." + var);
-        }
-        for (String var : inputVars) {
-            postcondition = postcondition.replaceAll("\\b" + var + "\\b", "i." + var);
-        }
-        postcondition = postcondition.replaceAll(";", "");
-        postcondition = postcondition.replaceAll("//.*", "");
-        return postcondition;
-    }
-
-    public Map<String, String> constructCheckEvaluationInput(String original, String evaluation, List<String> inputVars) {
-        StringBuilder assertion = new StringBuilder();
-        int random = (int) (Math.random()*1000);
-        for (String var : inputVars) {
-            original = original.replaceAll("\\b" + var + "\\b", "i." + var);
-            evaluation = evaluation.replaceAll("\\b" + var + "\\b", "i." + var);
-        }
-        original = original.replaceAll( "==", "=");
-        evaluation = evaluation.replaceAll("==", "=");
-        original = original.replaceAll( ";", "");
-        evaluation = evaluation.replaceAll(";", "");
-
-        assertion.append("assert ").append("assertion_").append(random).append(" {\n");
-        assertion.append("    ").append("all i:Input | ").append(original).append(" <=> ").append(evaluation).append("\n");
-        assertion.append("}\n");
-
-        String checkAssertion = "check assertion_" + random + " for 70 but 6 Int\n";
-        return Map.of("assertion", assertion.toString(), "check", checkAssertion);
-    }
-
-    public Map<String, String> constructCheckEvaluationOutput(String original, String evaluation, List<String> outputVars, List<String> inputVars) {
-        StringBuilder assertion = new StringBuilder();
-        int random = (int) (Math.random()*1000);
-        for (String var : outputVars) {
-            original = original.replaceAll("\\b" + var + "\\b", "o." + var);
-            evaluation = evaluation.replaceAll("\\b" + var + "\\b", "o." + var);
-        }
-
-        for (String var : inputVars) {
-            original = original.replaceAll("\\b" + var + "\\b", "i." + var);
-            evaluation = evaluation.replaceAll("\\b" + var + "\\b", "i." + var);
-        }
-
-        String finalOriginal = original;
-        String finalEvaluation = evaluation;
-        boolean hasInputVars = inputVars.stream().anyMatch(var ->
-                finalOriginal.contains("i." + var) || finalEvaluation.contains("i." + var)
-        );
-
-        original = original.replaceAll( "==", "=");
-        evaluation = evaluation.replaceAll("==", "=");
-        original = original.replaceAll( ";", "");
-        evaluation = evaluation.replaceAll(";", "");
-
-
-        assertion.append("assert ").append("assertion_").append(random).append(" {\n").append("    ");
-        if (hasInputVars){
-            assertion.append("all o:Output, i:Input | ").append(original).append(" <=> ").append(evaluation).append("\n");
-        } else {
-            assertion.append("all o:Output | ").append(original).append(" <=> ").append(evaluation).append("\n");
-        }
-        assertion.append("}\n");
-
-        String checkAssertion = "check assertion_" + random + " for 70 but 6 Int\n";
-        return Map.of("assertion", assertion.toString(), "check", checkAssertion);
-    }
-
     private List<String> extractInputVariables(String expression){
         List<String> inputVars = new ArrayList<>();
         Matcher matcher = Pattern.compile("method\\s+\\w+\\(([^)]*)\\) ").matcher(expression);
@@ -148,7 +78,6 @@ public class DafnyToAlloyConverter {
         String methodName = extractMethodName(methodSignature);
 
         List<String> inputVars = variables.get("input");
-        List<String> outputVars = variables.get("output");
         StringBuilder inputSig = new StringBuilder("sig Input {");
         for (String var : inputVars) {
             inputSig.append("\n    ").append(var).append(": Int,"); //podemos ir buscar o tipo da variavel a assinatura do metodo, e ter um converter de tipos de dafny para alloy
@@ -157,7 +86,6 @@ public class DafnyToAlloyConverter {
         inputSig.append("\n}\n");
 
         String precondition = constructPrecondition(dafnySpecs, inputVars);
-        String postcondition = constructPostcondition(dafnySpecs, outputVars, inputVars);
 
         // Construct final Alloy model
         return String.format("""
@@ -174,41 +102,7 @@ public class DafnyToAlloyConverter {
         }
 
         run {} for 1 but 10 Int
-        """, methodName, inputSig, precondition, postcondition);
-    }
-
-    public String convertToAlloyCheck(String code) {
-        String methodSignature = dafnyTranslator.extractMethodSignature(code);
-
-        Map<String, List<String>> variables = extractVariables(methodSignature);
-        String methodName = extractMethodName(methodSignature);
-
-        List<String> inputVars = variables.get("input");
-        List<String> outputVars = variables.get("output");
-        StringBuilder inputSig = new StringBuilder("sig Input {");
-        for (String var : inputVars) {
-            inputSig.append("\n    ").append(var).append(": Int,"); //podemos ir buscar o tipo da variavel a assinatura do metodo, e ter um converter de tipos de dafny para alloy
-        }
-        inputSig.setLength(inputSig.length() - 1);
-        inputSig.append("\n}\n");
-
-        StringBuilder outputSig = new StringBuilder("sig Output {");
-        for (String var : outputVars) {
-            outputSig.append("\n    ").append(var).append(": Int,");
-        }
-        outputSig.setLength(outputSig.length() - 1);
-        outputSig.append("\n}\n");
-
-        // Construct final Alloy model
-        return String.format("""
-        module %s
-
-        %s
-        %s
-        
-        
-
-        """, methodName, inputSig, outputSig);
+        """, methodName, inputSig, precondition);
     }
 
 }
