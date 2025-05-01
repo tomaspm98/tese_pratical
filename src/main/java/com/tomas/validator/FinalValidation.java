@@ -41,7 +41,7 @@ public class FinalValidation {
                 String output = codeRunner.getOutputFromCode(input);
                 if (output == null) {
                     allOutputsValid = false;
-                    break; // exit early to retry
+                    break;
                 }
                 for (Map.Entry<String, Integer> entry : input.entrySet()) {
                     postcondition_replaced = postcondition_replaced.replaceAll(

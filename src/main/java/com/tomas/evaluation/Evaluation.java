@@ -1,7 +1,6 @@
 package com.tomas.evaluation;
 
 import com.tomas.model.InputResponse;
-import com.tomas.validator.DafnyTranslator;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,12 +14,16 @@ public class Evaluation {
 
     CodeEvaluator codeEvaluator = new CodeEvaluator();
     SpecsEvaluator specsEvaluator = new SpecsEvaluator();
+    EvaluationResultWriter evaluationResultWriter = new EvaluationResultWriter();
     private int totalCounter = 0;
     private int counterCorrectCode = 0;
     private int counterCorrectSpecs = 0;
     private int counterConsistencyDetections = 0;
+    private int falsePositives = 0;
+    private int falseNegatives = 0;
     private boolean correctCode;
     private boolean correctSpecs;
+    private double consistencyResult;
 
     public void evaluateIndividual(CodeTask codeTask) throws IOException, InterruptedException {
         RestTemplate restTemplate = new RestTemplate();
@@ -33,6 +36,7 @@ public class Evaluation {
 
         String codeCleaned = response.getBody().getCodeGenerated().replaceAll("(?s)def main\\(\\):.*", "");
         String specs = response.getBody().getSpecsGenerated();
+        consistencyResult = response.getBody().getResult();
 
         if (specsEvaluator.evaluateSpecs(specs, codeTask.getTask_id())) {
             System.out.println("Specs evaluation passed! Problem number" + (totalCounter+1));
@@ -65,10 +69,23 @@ public class Evaluation {
             System.out.println("Code evaluation passed but specs evaluation failed!");
             counterConsistencyDetections++;
             totalCounter++;
+        } else if (!correctSpecs && correctCode && response.getBody().getResult() == 1.0) {
+            System.out.println("Consistency wrongly detected (false positive)!");
+            totalCounter++;
+            falsePositives++;
+        } else if (correctSpecs && !correctCode && response.getBody().getResult() == 1.0) {
+            System.out.println("Consistency wrongly detected (false positive)!");
+            totalCounter++;
+            falsePositives++;
+        } else if (correctSpecs && correctCode && response.getBody().getResult() < 1.0) {
+            System.out.println("Consistency wrongly detected (false negative)!");
+            totalCounter++;
+            falseNegatives++;
         } else {
             System.out.println("Consistency wrongly detected!");
             totalCounter++;
         }
+        evaluationResultWriter.addResult(codeTask.getTask_id(), correctSpecs, correctCode, consistencyResult);
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -78,10 +95,13 @@ public class Evaluation {
         for (CodeTask codeTask : listCode) {
             evaluation.evaluateIndividual(codeTask);
         }
+        evaluation.evaluationResultWriter.writeCsv();
         System.out.println("Consistency detections: " + evaluation.counterConsistencyDetections);
         System.out.println("Total evaluations: " + evaluation.totalCounter);
         System.out.println("Correct code evaluations: " + evaluation.counterCorrectCode);
         System.out.println("Correct specs evaluations: " + evaluation.counterCorrectSpecs);
+        System.out.println("False positives: " + evaluation.falsePositives);
+        System.out.println("False negatives: " + evaluation.falseNegatives);
     }
 }
 
