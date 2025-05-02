@@ -21,11 +21,17 @@ public class DafnyTranslator {
         Matcher ensuresMatcher = Pattern.compile("ensures (.+)").matcher(code);
 
         while (requiresMatcher.find()) {
-            preconditions.add(requiresMatcher.group(1).trim());
+            String precondition = requiresMatcher.group(1).trim();
+            precondition = precondition.replaceAll(";", "");
+            precondition = precondition.replaceAll("//.*", "");
+            preconditions.add(precondition);
         }
 
         while (ensuresMatcher.find()) {
-            postconditions.add(ensuresMatcher.group(1).trim());
+            String postcondition = ensuresMatcher.group(1).trim();
+            postcondition = postcondition.replaceAll(";", "");
+            postcondition = postcondition.replaceAll("//.*", "");
+            postconditions.add(postcondition);
         }
         specs.put("precondition", constructOneCondition(preconditions));
         specs.put("postcondition", constructOneCondition(postconditions));

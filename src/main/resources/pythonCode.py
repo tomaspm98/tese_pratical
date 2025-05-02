@@ -1,24 +1,16 @@
 import sys
 
-def calculate_sum_and_average(n):
-    if n < 1:
-        return (0, 0)
-    total_sum = n * (n + 1) // 2
-    average = total_sum / n
-    return (total_sum, average)
+def find_perimeter(side):
+    return 4 * side
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <number>")
+    if len(sys.argv) != 2 or not sys.argv[1].isdigit():
+        print("Usage: python script.py <side_length>")
         sys.exit(1)
     
-    try:
-        number = int(sys.argv[1])
-        total_sum, average = calculate_sum_and_average(number)
-        print(f"Sum: {total_sum}, Average: {average}")
-    except ValueError:
-        print("Please provide a valid integer.")
-        sys.exit(1)
+    side = int(sys.argv[1])
+    perimeter = find_perimeter(side)
+    print(perimeter)
 
 if __name__ == "__main__":
     main()

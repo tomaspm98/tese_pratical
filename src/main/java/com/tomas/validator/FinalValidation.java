@@ -30,6 +30,7 @@ public class FinalValidation {
     public double conditionParser(Set<Map<String, Integer>> inputsFromAlloy, String message) throws IOException, ScriptException, InterruptedException {
         final int MAX_RETRIES = 3;
         int retries = 0;
+        boolean realOutput = false;
         while (retries < MAX_RETRIES) {
             restTemplate.postForObject("http://localhost:8080/code-generator", message, String.class);
             int counter = 0;
@@ -43,6 +44,10 @@ public class FinalValidation {
                     allOutputsValid = false;
                     break;
                 }
+                if (output.contains(".")) {
+                    realOutput = true;
+                    postcondition_replaced = transformDafnyCondition(postcondition_replaced);
+                }
                 for (Map.Entry<String, Integer> entry : input.entrySet()) {
                     postcondition_replaced = postcondition_replaced.replaceAll(
                             "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",
@@ -51,7 +56,12 @@ public class FinalValidation {
                 }
                 postcondition_replaced = postcondition_replaced.replaceAll(outputVarName, output);
                 postcondition_replaced = postcondition_replaced.replaceAll(";$", "");
-                String dafnyCode = "method Check() {\n    assert " + postcondition_replaced + ";\n}";
+                String dafnyCode;
+                if (realOutput) {
+                    dafnyCode = "function convertToReal(x: int): real {\n  x as real\n}\nmethod Check() {\n  assert " + postcondition_replaced + ";\n}";
+                } else {
+                    dafnyCode = "method Check() {\n    assert " + postcondition_replaced + ";\n}";
+                }
                 Path file = Files.createTempFile("equiv-check", ".dfy");
                 Files.writeString(file, dafnyCode);
                 if (verify(file)) {
@@ -95,6 +105,28 @@ public class FinalValidation {
         }
 
         return returns;
+    }
+
+    public String transformDafnyCondition(String condition) {
+        List<String> validOperators = List.of("==", "!=", "<=", ">=", "<", ">");
+        for (String operator : validOperators) {
+            int index = condition.indexOf(operator);
+            if (index != -1) {
+                String lhs = condition.substring(0, index + operator.length());
+                String rhs = condition.substring(index + operator.length());
+                return lhs + " convertToReal( " + rhs + " )";
+            }
+        }
+        return condition;
+    }
+
+    public static void main(String[] args) {
+        String condition = "volume <= a * b * h / 2;";
+        FinalValidation finalValidation = new FinalValidation(new CodeRunner(), new DafnyTranslator(), new RestTemplate());
+        String transformedCondition = finalValidation.transformDafnyCondition(condition);
+        System.out.println("Transformed condition: " + transformedCondition);
+
+
     }
 
 }

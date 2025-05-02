@@ -21,8 +21,8 @@ public class DafnyToAlloyConverter {
         for (String var : inputVars) {
             precondition = precondition.replaceAll("\\b" + var + "\\b", "i." + var);
         }
-        precondition = precondition.replaceAll(";", "");
-        precondition = precondition.replaceAll("//.*", "");
+        //precondition = precondition.replaceAll(";", "");
+        //precondition = precondition.replaceAll("//.*", "");
         return precondition;
     }
 
