@@ -1,9 +1,8 @@
 package com.tomas.validator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.tomas.util.Util;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,12 +59,49 @@ public class DafnyTranslator {
         return null;
     }
 
+    public String extractVariables(String expression) {
+        Matcher matcher = Pattern.compile("method\\s+\\w+\\s*\\(([^)]*)\\)\\s+returns\\s*\\(([^)]*)\\)").matcher(expression);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
+    }
+
+    public Map<String, String> parseParamsWithType(String input) {
+        Map<String, String> map = new HashMap<>();
+        String[] pairs = input.split(",");
+
+        for (String pair : pairs) {
+            String[] parts = pair.split(":");
+            if (parts.length == 2) {
+                String key = parts[0];
+                String value = parts[1];
+                map.put(key, value);
+            }
+        }
+
+        return map;
+    }
+
     public Map<String, String> getSpecs() {
         return specs;
     }
 
     public String getMethodSignature() {
         return methodSignature;
+    }
+
+    public static void main(String[] args) {
+        String dafnyCode = """
+                method test(a: int, b: int) returns (c: int)
+                """;
+
+        DafnyTranslator translator = new DafnyTranslator();
+        String specs = translator.extractVariables(dafnyCode);
+        String methodSignature = translator.extractMethodSignature(dafnyCode);
+
+        System.out.println("Specs: " + specs);
+        System.out.println("Method Signature: " + methodSignature);
     }
 
 }
