@@ -15,15 +15,15 @@ import java.util.*;
 public class AlloyRunner {
 
     private DafnyToAlloyConverter dafnyToAlloyConverter;
-    private static final int NUMBER_OF_INPUTS_FROM_ALLOY = 10;
+    private static final int NUMBER_OF_INPUTS_FROM_ALLOY = 100;
 
     public AlloyRunner(DafnyToAlloyConverter dafnyToAlloyConverter) {
         this.dafnyToAlloyConverter = dafnyToAlloyConverter;
     }
 
-    public Set<Map<String, Integer>> runAlloyModel(String code) {
+    public Set<Map<String, Object>> runAlloyModel(String code) {
         String alloyModel = dafnyToAlloyConverter.convertToAlloyRun(code);
-        Set<Map<String, Integer>> inputList = new HashSet<>();
+        Set<Map<String, Object>> inputList = new HashSet<>();
 
         try {
             A4Reporter rep = new A4Reporter();
@@ -41,22 +41,32 @@ public class AlloyRunner {
                             A4TupleSet tuples = solution.eval(sig);
 
                             for (A4Tuple tuple : tuples) {
-                                Map<String, Integer> inputMap = new HashMap<>();
+                                Map<String, Object> inputMap = new HashMap<>();
 
                                 for (Sig.Field field : sig.getFields()) {
                                     A4TupleSet fieldValues = solution.eval(field);
+                                    String fieldName = field.label.substring(field.label.indexOf("/") + 1);
 
-                                    for (A4Tuple fieldTuple : fieldValues) {
-                                        if (fieldTuple.atom(0).equals(tuple.atom(0))) {
-                                            String fieldName = field.label.substring(field.label.indexOf("/") + 1);
-                                            int fieldValue = Integer.parseInt(fieldTuple.atom(1).replace("Int$", ""));
-                                            inputMap.put(fieldName, fieldValue);
+                                    if (field.type().arity() == 3) { //é array
+                                        Map<Integer, Integer> array = new TreeMap<>();
+                                        for (A4Tuple fieldTuple : fieldValues) {
+                                            if (fieldTuple.atom(0).equals(tuple.atom(0))) {
+                                                int index = Integer.parseInt(fieldTuple.atom(1));
+                                                int value = Integer.parseInt(fieldTuple.atom(2));
+                                                array.put(index, value);
+                                            }
+                                        }
+                                        inputMap.put(fieldName, new ArrayList<>(array.values()));
+                                    } else {
+                                        for (A4Tuple fieldTuple : fieldValues) {
+                                            if (fieldTuple.atom(0).equals(tuple.atom(0))) {
+                                                int fieldValue = Integer.parseInt(fieldTuple.atom(1).replace("Int$", ""));
+                                                inputMap.put(fieldName, fieldValue);
+                                            }
                                         }
                                     }
                                 }
-                                if (!inputList.contains(inputMap)) {
-                                    inputList.add(inputMap);
-                                }
+                                inputList.add(inputMap);
                             }
 
                         }

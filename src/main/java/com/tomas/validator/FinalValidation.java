@@ -27,7 +27,7 @@ public class FinalValidation {
         this.dafnyTranslator = dafnyTranslator;
     }
 
-    public double conditionParser(Set<Map<String, Integer>> inputsFromAlloy, String message) throws IOException, ScriptException, InterruptedException {
+    public double conditionParser(Set<Map<String, Object>> inputsFromAlloy, String message) throws IOException, InterruptedException {
         final int MAX_RETRIES = 3;
         int retries = 0;
         boolean realOutput = false;
@@ -37,7 +37,7 @@ public class FinalValidation {
             boolean allOutputsValid = true;
             String postcondition = dafnyTranslator.getSpecs().get("postcondition");
             String outputVarName = getOutputVariableName().get(0);
-            for (Map<String, Integer> input : inputsFromAlloy) {
+            for (Map<String, Object> input : inputsFromAlloy) {
                 String postcondition_replaced = postcondition;
                 String output = codeRunner.getOutputFromCode(input);
                 if (output == null) {
@@ -48,7 +48,7 @@ public class FinalValidation {
                     realOutput = true;
                     postcondition_replaced = transformDafnyCondition(postcondition_replaced);
                 }
-                for (Map.Entry<String, Integer> entry : input.entrySet()) {
+                for (Map.Entry<String, Object> entry : input.entrySet()) {
                     postcondition_replaced = postcondition_replaced.replaceAll(
                             "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",
                             entry.getValue().toString()

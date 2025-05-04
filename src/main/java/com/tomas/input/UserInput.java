@@ -30,8 +30,16 @@ public class UserInput {
 
     @PostMapping
     public InputResponse userInput(@RequestBody String message) throws IOException, ScriptException {
-        String specs = restTemplate.postForObject("http://localhost:8080/specs-generator", message, String.class);
-        Set<Map<String,Integer>> inputsFromAlloy = alloyRunner.runAlloyModel(specs);
+        //String specs = restTemplate.postForObject("http://localhost:8080/specs-generator", message, String.class);
+        String specs = " ```dafny\n" +
+                "method FindKthElement(arr: array<int>, k: int) returns (elem: int)\n" +
+                "  requires 0 <= k && k < arr.Length\n" +
+                "  ensures elem == arr[k]\n" +
+                "{\n" +
+                "  // Logic to find the kth element in the given array\n" +
+                "}\n" +
+                "```";
+        Set<Map<String,Object>> inputsFromAlloy = alloyRunner.runAlloyModel(specs);
 
         double result;
         try {

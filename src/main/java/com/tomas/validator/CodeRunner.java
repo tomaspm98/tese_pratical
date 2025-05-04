@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class CodeRunner {
 
-    public String getOutputFromCode(Map<String, Integer> inputsFromAlloy) throws IOException {
+    public String getOutputFromCode(Map<String, Object> inputsFromAlloy) throws IOException {
         Process process = getProcess(inputsFromAlloy);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
@@ -18,12 +18,18 @@ public class CodeRunner {
         return null;
     }
 
-    private Process getProcess(Map<String, Integer> inputsFromAlloy) throws IOException {
+    private Process getProcess(Map<String, Object> inputsFromAlloy) throws IOException {
         List<String> command = new ArrayList<>();
         command.add("python");
         command.add("src/main/resources/pythonCode.py");
-        for (Map.Entry<String, Integer> entry : inputsFromAlloy.entrySet()) {
-            command.add(entry.getValue().toString());
+        for (Map.Entry<String, Object> entry : inputsFromAlloy.entrySet()) {
+            if (entry.getValue() instanceof ArrayList<?>) {
+                String value = entry.getValue().toString();
+                value = value.replace("[", "").replace("]", "");
+                command.add(value);
+            } else {
+                command.add(entry.getValue().toString());
+            }
         }
 
         ProcessBuilder processBuilder = new ProcessBuilder(command);

@@ -39,7 +39,7 @@ public class Evaluation {
         consistencyResult = response.getBody().getResult();
 
         if (specsEvaluator.evaluateSpecs(specs, codeTask.getTask_id())) {
-            System.out.println("Specs evaluation passed! Problem number" + (totalCounter+1));
+            System.out.println("Specs evaluation passed! Problem number" + (codeTask.getTask_id()));
             correctSpecs = true;
             counterCorrectSpecs++;
         } else {
