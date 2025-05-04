@@ -1,20 +1,16 @@
 import sys
 
-def divide_integers(dividend, divisor):
-    if divisor == 0:
-        raise ZeroDivisionError("Cannot divide by zero")
-    return dividend // divisor
+def find_perimeter(side):
+    return 4 * side
 
 def main():
-    if len(sys.argv) != 3:
-        raise ValueError("Invalid number of arguments")
-    try:
-        dividend = int(sys.argv[1])
-        divisor = int(sys.argv[2])
-        result = divide_integers(dividend, divisor)
-        print(result)
-    except ValueError as e:
-        print(e)
+    if len(sys.argv) != 2 or not sys.argv[1].isdigit():
+        print("Usage: python script.py <side_length>")
+        sys.exit(1)
+    
+    side = int(sys.argv[1])
+    perimeter = find_perimeter(side)
+    print(perimeter)
 
 if __name__ == "__main__":
     main()

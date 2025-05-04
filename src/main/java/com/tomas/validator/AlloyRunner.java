@@ -8,7 +8,6 @@ import edu.mit.csail.sdg.parser.CompModule;
 import edu.mit.csail.sdg.parser.CompUtil;
 import edu.mit.csail.sdg.translator.*;
 import kodkod.engine.satlab.SATFactory;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
@@ -16,24 +15,21 @@ import java.util.*;
 public class AlloyRunner {
 
     private DafnyToAlloyConverter dafnyToAlloyConverter;
-    private RestTemplate restTemplate;
     private static final int NUMBER_OF_INPUTS_FROM_ALLOY = 10;
 
-    public AlloyRunner(DafnyToAlloyConverter dafnyToAlloyConverter, RestTemplate restTemplate) {
+    public AlloyRunner(DafnyToAlloyConverter dafnyToAlloyConverter) {
         this.dafnyToAlloyConverter = dafnyToAlloyConverter;
-        this.restTemplate = restTemplate;
     }
 
-    public Set<Map<String, Integer>> runAlloyModel(String message) {
-        String code = restTemplate.postForObject("http://localhost:8080/specs-generator", message, String.class);
-        String alloyModel = dafnyToAlloyConverter.convertToAlloy(code);
+    public Set<Map<String, Integer>> runAlloyModel(String code) {
+        String alloyModel = dafnyToAlloyConverter.convertToAlloyRun(code);
         Set<Map<String, Integer>> inputList = new HashSet<>();
 
         try {
             A4Reporter rep = new A4Reporter();
             CompModule world = CompUtil.parseEverything_fromString(rep, alloyModel);
             A4Options options = new A4Options();
-            options.solver = SATFactory.get("sat4j");
+            options.solver = SATFactory.get("minisat");
 
             Command cmd = world.getAllCommands().get(0);
 
@@ -52,7 +48,7 @@ public class AlloyRunner {
 
                                     for (A4Tuple fieldTuple : fieldValues) {
                                         if (fieldTuple.atom(0).equals(tuple.atom(0))) {
-                                            String fieldName = field.label.substring(field.label.indexOf("/") + 1); // Get field name
+                                            String fieldName = field.label.substring(field.label.indexOf("/") + 1);
                                             int fieldValue = Integer.parseInt(fieldTuple.atom(1).replace("Int$", ""));
                                             inputMap.put(fieldName, fieldValue);
                                         }

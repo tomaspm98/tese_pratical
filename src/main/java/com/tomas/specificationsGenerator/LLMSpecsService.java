@@ -1,39 +1,34 @@
 package com.tomas.specificationsGenerator;
 
-import com.tomas.model.Message;
 import com.tomas.model.Request;
 import com.tomas.model.Response;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-
 @Service
 public class LLMSpecsService {
 
-    private static final String url = "https://api.together.xyz/v1/chat/completions";
-    private static final String apiKey = "8c61b03e1c9750e780cbc123679523d551be0171c65f32458966d831f6503552";
+    private static final String url = "http://localhost:11434/api/generate";
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String codeRequest = "Generate specifications in Dafny (only the dafny code) containing pre-conditions, post-conditions and the code to the natural language problem presented below, without using int.minValue and int.MaxValue that aren't valid and only containing valid alloy syntax on Dafny:\n";
-    private static final String llmModel = "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free";
+    private static final String codeRequest = "Generate specifications in Dafny (only the code in Dafny language, the language is presented in https://dafny.org/), don't produce any natural language or code comments, only the code I ask you containing pre-conditions (only when necessary, represented with requires, all in 1 line), post-conditions (only when necessary, represented with ensures, all in 1 line, under the pre-conditions) and the logic code to the natural language problem presented below, without using int.minValue and int.MaxValue that aren't valid and only containing valid alloy syntax on Dafny, and write only methods whose the only signature accepted is method <method_name>(inputVariables) returns (outputVariables), don't use -> instead of returns keyword, also don't use any built-in math functions or libraries like Math.PI, sqrt() and pow() and only rely on basic arithmetic operations (addition, subtraction, multiplication, division and exponentiation) and manually define constants when necessary (for example, instead of using Math.pi, use 3.141592653589793), and don't use the keywords 'old' neither 'forall' when defining the contract of the method:\n";
+    private static final String llmModel = "deepseek-coder-v2:16b";
 
     public String getSpecsResponse(String userMessage) {
         String fullMessage = codeRequest + userMessage;
-        Request request = new Request(llmModel, List.of(new Message("user", codeRequest + fullMessage)));
+        Request request = new Request(llmModel, codeRequest + fullMessage);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
 
         HttpEntity<Request> entity = new HttpEntity<>(request, headers);
 
         ResponseEntity<Response> response = restTemplate.exchange(url, HttpMethod.POST, entity, Response.class);
 
-        if (response.getBody() == null || response.getBody().getChoices().isEmpty()) {
+        if (response.getBody() == null || response.getBody().getResponse() == null) {
             return "I'm sorry, I don't understand.";
         } else {
-            return response.getBody().getChoices().get(0).getMessage().getContent();
+            return response.getBody().getResponse();
         }
     }
 

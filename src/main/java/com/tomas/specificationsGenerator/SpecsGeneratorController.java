@@ -1,6 +1,5 @@
 package com.tomas.specificationsGenerator;
 
-import com.tomas.validator.DafnyToAlloyConverter;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -8,11 +7,9 @@ import org.springframework.web.bind.annotation.*;
 public class SpecsGeneratorController {
 
     private final LLMSpecsService llmSpecsService;
-    private final DafnyToAlloyConverter dafnyToAlloyConverter;
 
-    public SpecsGeneratorController(LLMSpecsService llmSpecsService, DafnyToAlloyConverter dafnyToAlloyConverter) {
+    public SpecsGeneratorController(LLMSpecsService llmSpecsService) {
         this.llmSpecsService = llmSpecsService;
-        this.dafnyToAlloyConverter = dafnyToAlloyConverter;
     }
 
     @PostMapping

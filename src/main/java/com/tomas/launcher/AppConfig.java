@@ -24,7 +24,7 @@ public class AppConfig {
 
     @Bean
     public AlloyRunner alloyRunner() {
-        return new AlloyRunner(dafnyToAlloyConverter(), restTemplate());
+        return new AlloyRunner(dafnyToAlloyConverter());
     }
 
     @Bean

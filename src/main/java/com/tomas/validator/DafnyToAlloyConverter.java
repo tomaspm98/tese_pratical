@@ -14,21 +14,16 @@ public class DafnyToAlloyConverter {
 
     public String constructPrecondition(Map<String, String> specs, List<String> inputVars) {
         String precondition = specs.get("precondition");
+        if (precondition == null || precondition.equals("true") || precondition.equals("true;")) {
+            return "1=1";
+        }
+
         for (String var : inputVars) {
             precondition = precondition.replaceAll("\\b" + var + "\\b", "i." + var);
         }
+        //precondition = precondition.replaceAll(";", "");
+        //precondition = precondition.replaceAll("//.*", "");
         return precondition;
-    }
-
-    public String constructPostcondition(Map<String, String> specs, List<String> outputVars, List<String> inputVars) {
-        String postcondition = specs.get("postcondition");
-        for (String var : outputVars) {
-            postcondition = postcondition.replaceAll("\\b" + var + "\\b", "o." + var);
-        }
-        for (String var : inputVars) {
-            postcondition = postcondition.replaceAll("\\b" + var + "\\b", "i." + var);
-        }
-        return postcondition;
     }
 
     private List<String> extractInputVariables(String expression){
@@ -75,7 +70,7 @@ public class DafnyToAlloyConverter {
         return null;
     }
 
-    public String convertToAlloy(String code) {
+    public String convertToAlloyRun(String code) {
         String methodSignature = dafnyTranslator.extractMethodSignature(code);
         Map<String, String> dafnySpecs = dafnyTranslator.extractSpecs(code);
 
@@ -83,7 +78,6 @@ public class DafnyToAlloyConverter {
         String methodName = extractMethodName(methodSignature);
 
         List<String> inputVars = variables.get("input");
-        List<String> outputVars = variables.get("output");
         StringBuilder inputSig = new StringBuilder("sig Input {");
         for (String var : inputVars) {
             inputSig.append("\n    ").append(var).append(": Int,"); //podemos ir buscar o tipo da variavel a assinatura do metodo, e ter um converter de tipos de dafny para alloy
@@ -91,30 +85,24 @@ public class DafnyToAlloyConverter {
         inputSig.setLength(inputSig.length() - 1);
         inputSig.append("\n}\n");
 
-        StringBuilder outputSig = new StringBuilder("sig Output {");
-        for (String var : outputVars) {
-            outputSig.append("\n    ").append(var).append(": Int,");
-        }
-        outputSig.setLength(outputSig.length() - 1);
-        outputSig.append("\n}\n");
-
         String precondition = constructPrecondition(dafnySpecs, inputVars);
-        String postcondition = constructPostcondition(dafnySpecs, outputVars, inputVars);
 
         // Construct final Alloy model
         return String.format("""
         module %s
 
         %s
-        %s
-
+        
         fact Preconditions {
             all i: Input | %s
         }
+        
+        fact {
+            some Input
+        }
 
-        run {} for 70 but 6 Int
-        """, methodName, inputSig, outputSig, precondition, postcondition);
+        run {} for 1 but 10 Int
+        """, methodName, inputSig, precondition);
     }
-
 
 }

@@ -1,14 +1,14 @@
 package com.tomas.model;
 
-import java.util.List;
-
 public class Request {
     private String model;
-    private List<Message> messages;
+    private String prompt;
+    private boolean stream = false;
 
-    public Request(String model, List<Message> messages) {
+    public Request(String model, String prompt) {
         this.model = model;
-        this.messages = messages;
+        this.prompt = prompt;
+        this.stream = false;
     }
 
     public String getModel() {
@@ -19,11 +19,19 @@ public class Request {
         this.model = model;
     }
 
-    public List<Message> getMessages() {
-        return messages;
+    public String getPrompt() {
+        return prompt;
     }
 
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
+    public void setPrompt(String prompt) {
+        this.prompt = prompt;
+    }
+
+    public boolean isStream() {
+        return stream;
+    }
+
+    public void setStream(boolean stream) {
+        this.stream = stream;
     }
 }
