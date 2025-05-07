@@ -1,17 +1,15 @@
 import sys
 
-def find_kth_element(arr, k):
-    return sorted(arr)[k - 1]
+def min_two_numbers(a, b):
+    return min(int(a), int(b))
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: python script.py <array> <k>")
+    if len(sys.argv) != 3 or not all(arg.isdigit() for arg in sys.argv[1:]):
+        print("Usage: python script.py <number1> <number2>")
         sys.exit(1)
     
-    arr = list(map(int, sys.argv[1].split(',')))
-    k = int(sys.argv[2])
-    
-    result = find_kth_element(arr, k)
+    num1, num2 = sys.argv[1], sys.argv[2]
+    result = min_two_numbers(num1, num2)
     print(result)
 
 if __name__ == "__main__":

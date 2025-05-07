@@ -23,6 +23,7 @@ public class AlloyRunner {
 
     public Set<Map<String, Object>> runAlloyModel(String code) {
         String alloyModel = dafnyToAlloyConverter.convertToAlloyRun(code);
+
         Set<Map<String, Object>> inputList = new HashSet<>();
 
         try {
@@ -48,15 +49,26 @@ public class AlloyRunner {
                                     String fieldName = field.label.substring(field.label.indexOf("/") + 1);
 
                                     if (field.type().arity() == 3) { //é array
-                                        Map<Integer, Integer> array = new TreeMap<>();
+                                        Map<Integer, Object> array = new TreeMap<>();
+                                        String typeString = "";
                                         for (A4Tuple fieldTuple : fieldValues) {
                                             if (fieldTuple.atom(0).equals(tuple.atom(0))) {
                                                 int index = Integer.parseInt(fieldTuple.atom(1));
-                                                int value = Integer.parseInt(fieldTuple.atom(2));
-                                                array.put(index, value);
+                                                String value = fieldTuple.atom(2);
+                                                try {
+                                                    int valueConverted = Integer.parseInt(value);
+                                                    array.put(index, valueConverted);
+                                                } catch (NumberFormatException e) {
+                                                    String valueConverted = value.split("\\$")[0];
+                                                    typeString = typeString + valueConverted;
+                                                }
                                             }
                                         }
-                                        inputMap.put(fieldName, new ArrayList<>(array.values()));
+                                        if (!array.isEmpty()) {
+                                            inputMap.put(fieldName, new ArrayList<>(array.values()));
+                                        } else {
+                                            inputMap.put(fieldName, typeString);
+                                        }
                                     } else {
                                         for (A4Tuple fieldTuple : fieldValues) {
                                             if (fieldTuple.atom(0).equals(tuple.atom(0))) {
@@ -81,6 +93,11 @@ public class AlloyRunner {
         }
 
         return inputList;
+    }
+
+    public static void main(String[] args) {
+        AlloyRunner alloyRunner = new AlloyRunner(new DafnyToAlloyConverter(new DafnyTranslator()));
+        alloyRunner.runAlloyModel("");
     }
 
 }

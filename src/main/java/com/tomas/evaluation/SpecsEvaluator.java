@@ -51,7 +51,7 @@ public class SpecsEvaluator {
 
             for (int i = 0; i < paramsFile.size(); i++) {
                 if (specsConditionsFile.get("precondition") == null) {
-                    specsConditionsFile.put("precondition", "");
+                    specsConditionsFile.put("precondition", "false");
                     break;
                 }
                 String newPrecondition = specsConditionsFile.get("precondition").replaceAll(paramsFile.get(i), params.get(i));
@@ -63,7 +63,7 @@ public class SpecsEvaluator {
             }
             for (int i = 0; i < returnsFile.size(); i++) {
                 if (specsConditionsFile.get("postcondition") == null) {
-                    specsConditionsFile.put("postcondition", "");
+                    specsConditionsFile.put("postcondition", "false");
                     break;
                 }
                 String newPostcondition = specsConditionsFile.get("postcondition").replaceAll(returnsFile.get(i), returns.get(i));
@@ -74,17 +74,19 @@ public class SpecsEvaluator {
             }
         }
 
-        return equivalentConditions(variables, specsConditions.get("precondition"), specsConditionsFile.get("precondition")) && equivalentConditions(variables, specsConditions.get("postcondition"), specsConditionsFile.get("postcondition"));
+        String auxiliarFunctions = extractAuxiliarFunctions(codeInFile);
+
+        return equivalentConditions(variables, specsConditions.get("precondition"), specsConditionsFile.get("precondition"), auxiliarFunctions) && equivalentConditions(variables, specsConditions.get("postcondition"), specsConditionsFile.get("postcondition"), auxiliarFunctions);
     }
 
-    public boolean equivalentConditions(String variables, String conditionGenerated, String conditionFile) throws IOException, InterruptedException {
-        String code = generate(variables, conditionGenerated, conditionFile);
+    public boolean equivalentConditions(String variables, String conditionGenerated, String conditionFile, String auxiliarFunctions) throws IOException, InterruptedException {
+        String code = generate(variables, conditionGenerated, conditionFile, auxiliarFunctions);
         Path dafnyFile = write(code);
 
         return verify(dafnyFile);
     }
 
-    public String generate(String variables, String cond1, String cond2) {
+    public String generate(String variables, String cond1, String cond2, String auxiliarFunctions) {
         String paramNames = extractParamNames(variables);
         return """
             lemma CheckEquivalence()
@@ -109,13 +111,16 @@ public class SpecsEvaluator {
             function Cond2(%s): bool {
               %s
             }
+            
+            %s
             """
                 .formatted(
                         variables, paramNames, paramNames,
                         variables, paramNames, paramNames,
                         paramNames, paramNames, paramNames, paramNames,
                         variables, cond1,
-                        variables, cond2
+                        variables, cond2,
+                        auxiliarFunctions
                 );
     }
 
@@ -146,5 +151,47 @@ public class SpecsEvaluator {
         process.waitFor();
 
         return output.contains("verified, 0 errors");
+    }
+
+    public String extractAuxiliarFunctions(String codeInFile) throws IOException {
+        StringBuilder result = new StringBuilder();
+
+        Pattern functionPattern = Pattern.compile(
+                "(?m)(ghost\\s+)?(function|predicate)\\s+[^\\n]*\\n(?:\\s+[^\\n]*\\n)*?\\{(?:[^{}]*|\\{[^{}]*})*}"
+        );
+
+        Matcher matcher = functionPattern.matcher(codeInFile);
+
+        while (matcher.find()) {
+            String functionBlock = matcher.group();
+            functionBlock = functionBlock.replaceFirst("\\bghost\\s+", "");
+            result.append(functionBlock).append("\n\n");
+        }
+
+        return result.toString();
+    }
+
+    public static void main(String[] args) throws IOException {
+        String code = """
+                predicate IsDigit(c: char)
+                {
+                    48 <= c as int <= 57
+                }
+                
+                
+                method CountDigits(s: string) returns (count: int)
+                    ensures count >= 0
+                    ensures count == | set i: int | 0 <= i < |s| && IsDigit(s[i])|
+                {
+                    var digits := set i: int | 0 <= i < |s| && IsDigit(s[i]);
+                    count := |digits|;
+                }
+                
+                
+                """;
+
+        SpecsEvaluator specsEvaluator = new SpecsEvaluator();
+        String ok = specsEvaluator.extractAuxiliarFunctions(code);
+        System.out.println(ok);
     }
 }

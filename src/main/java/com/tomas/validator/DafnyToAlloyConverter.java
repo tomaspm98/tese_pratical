@@ -14,14 +14,18 @@ public class DafnyToAlloyConverter {
 
     public String constructPrecondition(Map<String, String> specs, List<String> inputVars) {
         String precondition = specs.get("precondition");
-        if (precondition == null || precondition.equals("true") || precondition.equals("true;")) {
+        if (precondition == null || precondition.isEmpty() || precondition.equals("true") || precondition.equals("true;")) {
             return "1=1";
         }
 
         for (String var : inputVars) {
             precondition = precondition.replaceAll("\\b" + var + "\\b", "i." + var);
         }
-        precondition = precondition.replaceAll("(\\b[\\w.]+)\\.Length", "#$1"); //transform .Length in #
+        precondition = precondition.replaceAll("(\\b[\\w.]+)\\.Length", "#$1");
+        precondition = precondition.replaceAll("\\|(.+?)\\|", "#$1");
+        precondition = precondition.replaceAll("i\\.(\\w+)(\\s*!=\\s*\\[\\s*])", "some i.$1");
+        precondition = precondition.replaceAll("(\\w+(?:\\.\\w+)*)\\s*!=\\s*null", "some $1");
+        precondition = precondition.replaceAll("(\\w+(?:\\.\\w+)*)\\s*!=\\s*\"\"", "some $1");
         return precondition;
     }
 
@@ -73,6 +77,7 @@ public class DafnyToAlloyConverter {
         String methodSignature = dafnyTranslator.extractMethodSignature(code);
         Map<String, String> dafnySpecs = dafnyTranslator.extractSpecs(code);
         Map<String, String> paramsWithType = dafnyTranslator.parseParamsWithType(dafnyTranslator.extractVariables(methodSignature));
+        boolean isString = false;
 
         Map<String, List<String>> variables = extractVariables(methodSignature);
         String methodName = extractMethodName(methodSignature);
@@ -86,9 +91,14 @@ public class DafnyToAlloyConverter {
                 case " int":
                     inputSig.append("\n    ").append(entry.getKey()).append(": Int,");
                     break;
-                case " array<int>":
+                case " array<int>", " seq<int>":
                     inputSig.append("\n    ").append(entry.getKey()).append(": seq Int,");
                     runCommand = "run {} for 4 seq, 9 Int";
+                    break;
+                case " string", " str":
+                    inputSig.append("\n    ").append(entry.getKey()).append(": seq Char,");
+                    runCommand = "run {} for 4 seq, 9 Int";
+                    isString = true;
                     break;
                 default:
                     inputSig.append("\n    ").append(entry.getKey()).append(": ").append(entry.getValue()).append(",");
@@ -99,6 +109,16 @@ public class DafnyToAlloyConverter {
         inputSig.append("\n}\n");
 
         String precondition = constructPrecondition(dafnySpecs, inputVars);
+
+        if (isString) {
+            runCommand = """
+                    abstract sig Char {}
+                    one sig A, B, C, D0, E1, F2, Z extends Char {}
+                    
+                    
+                    run {} for 4 seq, 9 Int
+                    """;
+        }
 
         return String.format("""
         module %s
@@ -117,16 +137,21 @@ public class DafnyToAlloyConverter {
         """, methodName, inputSig, precondition, runCommand);
     }
 
+
     public static void main(String[] args) {
         DafnyTranslator dafnyTranslator = new DafnyTranslator();
         DafnyToAlloyConverter converter = new DafnyToAlloyConverter(dafnyTranslator);
         String dafnyCode = """
-                method FindKthElement(arr: array<int>, k: int) returns (elem: int)
-                  requires 0 <= k && k < arr.Length
-                  ensures elem == arr[k]
+                method CountDigits(s: string) returns (count: int)
+                    requires s != ""
+                    ensures count >= 0
+                    ensures count == | set i: int | 0 <= i < |s| && IsDigit(s[i])|
                 {
-                    c := a + b;
+                    var digits := set i: int | 0 <= i < |s| && IsDigit(s[i]);
+                    count := |digits|;
                 }
+                
+                
                 """;
         String alloyModel = converter.convertToAlloyRun(dafnyCode);
         System.out.println(alloyModel);

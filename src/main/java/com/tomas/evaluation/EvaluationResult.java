@@ -6,12 +6,16 @@ public class EvaluationResult {
     boolean specsEval;
     boolean codeEval;
     double consistencyEval;
+    String repoDafny;
+    String myRepoCode;
 
-    public EvaluationResult(int taskId, boolean specsEval, boolean codeEval, double consistencyEval) {
+    public EvaluationResult(int taskId, boolean specsEval, boolean codeEval, double consistencyEval, String repoDafny, String myRepoCode) {
         this.taskId = taskId;
         this.specsEval = specsEval;
         this.codeEval = codeEval;
         this.consistencyEval = consistencyEval;
+        this.repoDafny = repoDafny;
+        this.myRepoCode = myRepoCode;
     }
 
     public int getTaskId() {
@@ -44,5 +48,21 @@ public class EvaluationResult {
 
     public void setCodeEval(boolean codeEval) {
         this.codeEval = codeEval;
+    }
+
+    public String getRepoDafny() {
+        return repoDafny;
+    }
+
+    public void setRepoDafny(String repoDafny) {
+        this.repoDafny = repoDafny;
+    }
+
+    public String getMyRepoCode() {
+        return myRepoCode;
+    }
+
+    public void setMyRepoCode(String myRepoCode) {
+        this.myRepoCode = myRepoCode;
     }
 }

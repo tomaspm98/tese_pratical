@@ -85,7 +85,7 @@ public class Evaluation {
             System.out.println("Consistency wrongly detected!");
             totalCounter++;
         }
-        evaluationResultWriter.addResult(codeTask.getTask_id(), correctSpecs, correctCode, consistencyResult);
+        evaluationResultWriter.addResult(codeTask.getTask_id(), correctSpecs, correctCode, consistencyResult, "https://github.com/Mondego/dafny-synthesis/blob/master/MBPP-DFY-50/src/task_id_" + codeTask.getTask_id()+".dfy", "https://github.com/tomaspm98/tese_pratical/blob/main/src/main/java/com/tomas/evaluation/mbpp.jsonl");
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
