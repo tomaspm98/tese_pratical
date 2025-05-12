@@ -48,6 +48,11 @@ public class FinalValidation {
                     realOutput = true;
                     postcondition_replaced = transformDafnyCondition(postcondition_replaced);
                 }
+                if (output .equals("False")) {
+                    output = "false";
+                } else if (output.equals("True")) {
+                    output = "true";
+                }
                 for (Map.Entry<String, Object> entry : input.entrySet()) {
                     postcondition_replaced = postcondition_replaced.replaceAll(
                             "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",

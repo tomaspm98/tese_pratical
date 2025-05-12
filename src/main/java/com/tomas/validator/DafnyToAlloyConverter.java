@@ -1,5 +1,7 @@
 package com.tomas.validator;
 
+import com.tomas.util.NullOutputException;
+
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,68 +76,70 @@ public class DafnyToAlloyConverter {
     }
 
     public String convertToAlloyRun(String code) {
-        String methodSignature = dafnyTranslator.extractMethodSignature(code);
-        Map<String, String> dafnySpecs = dafnyTranslator.extractSpecs(code);
-        Map<String, String> paramsWithType = dafnyTranslator.parseParamsWithType(dafnyTranslator.extractVariables(methodSignature));
-        boolean isString = false;
+            String methodSignature = dafnyTranslator.extractMethodSignature(code);
+            Map<String, String> dafnySpecs = dafnyTranslator.extractSpecs(code);
+            Map<String, String> paramsWithType = dafnyTranslator.parseParamsWithType(dafnyTranslator.extractVariables(methodSignature));
+            boolean isString = false;
 
-        Map<String, List<String>> variables = extractVariables(methodSignature);
-        String methodName = extractMethodName(methodSignature);
+            Map<String, List<String>> variables = extractVariables(methodSignature);
+            String methodName = extractMethodName(methodSignature);
 
-        String runCommand = "run {} for 1 but 10 Int";
+            String runCommand = "run {} for 1 but 10 Int";
 
-        List<String> inputVars = variables.get("input");
-        StringBuilder inputSig = new StringBuilder("sig Input {");
-        for (Map.Entry<String, String> entry :  paramsWithType.entrySet()) {
-            switch (entry.getValue()) {
-                case " int":
-                    inputSig.append("\n    ").append(entry.getKey()).append(": Int,");
-                    break;
-                case " array<int>", " seq<int>":
-                    inputSig.append("\n    ").append(entry.getKey()).append(": seq Int,");
-                    runCommand = "run {} for 4 seq, 9 Int";
-                    break;
-                case " string", " str":
-                    inputSig.append("\n    ").append(entry.getKey()).append(": seq Char,");
-                    runCommand = "run {} for 4 seq, 9 Int";
-                    isString = true;
-                    break;
-                default:
-                    inputSig.append("\n    ").append(entry.getKey()).append(": ").append(entry.getValue()).append(",");
-                    break;
+            List<String> inputVars = variables.get("input");
+            StringBuilder inputSig = new StringBuilder("sig Input {");
+            for (Map.Entry<String, String> entry : paramsWithType.entrySet()) {
+                switch (entry.getValue()) {
+                    case " int":
+                        inputSig.append("\n    ").append(entry.getKey()).append(": Int,");
+                        break;
+                    case " array<int>", " seq<int>":
+                        inputSig.append("\n    ").append(entry.getKey()).append(": seq Int,");
+                        runCommand = "run {} for 4 seq, 9 Int";
+                        break;
+                    case " string", " str", " seq<char>", " array<char>":
+                        inputSig.append("\n    ").append(entry.getKey()).append(": seq Char,");
+                        runCommand = "run {} for 4 seq, 9 Int";
+                        isString = true;
+                        break;
+                    default:
+                        inputSig.append("\n    ").append(entry.getKey()).append(": ").append(entry.getValue()).append(",");
+                        break;
+                }
             }
-        }
-        inputSig.setLength(inputSig.length() - 1);
-        inputSig.append("\n}\n");
+            inputSig.setLength(inputSig.length() - 1);
+            inputSig.append("\n}\n");
 
-        String precondition = constructPrecondition(dafnySpecs, inputVars);
+            String precondition = constructPrecondition(dafnySpecs, inputVars);
 
-        if (isString) {
-            runCommand = """
-                    abstract sig Char {}
-                    one sig A, B, C, D0, E1, F2, Z extends Char {}
+            if (isString) {
+                runCommand = """
+                        abstract sig Char {}
+                        one sig A, B, C, D0, E1, F2, Z extends Char {}
+                        
+                        
+                        run {} for 4 seq, 9 Int
+                        """;
+            }
+
+            return String.format("""
+                    module %s
                     
+                    %s
                     
-                    run {} for 4 seq, 9 Int
-                    """;
+                    fact Preconditions {
+                        all i: Input | %s
+                    }
+                    
+                    fact {
+                        some Input
+                    }
+                    
+                    %s
+                    """, methodName, inputSig, precondition, runCommand);
         }
 
-        return String.format("""
-        module %s
 
-        %s
-        
-        fact Preconditions {
-            all i: Input | %s
-        }
-        
-        fact {
-            some Input
-        }
-
-        %s
-        """, methodName, inputSig, precondition, runCommand);
-    }
 
 
     public static void main(String[] args) {

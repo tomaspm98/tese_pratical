@@ -20,6 +20,14 @@ public class SpecsEvaluator {
 
     public boolean evaluateSpecs(String specs, int task_id) throws IOException, InterruptedException {
         Map<String, String> specsConditions = dafnyTranslator.extractSpecs(specs);
+        if (!specsConditions.containsKey("precondition")) {
+            specsConditions.put("precondition", "false");
+            System.out.println("Failed to get precondition!");
+        }
+        if (!specsConditions.containsKey("postcondition")) {
+            specsConditions.put("postcondition", "false");
+            System.out.println("Failed to get postcondition!");
+        }
         String methodSignature = dafnyTranslator.extractMethodSignature(specs);
         List<String> params = new ArrayList<>();
         List<String> returns = new ArrayList<>();
@@ -50,23 +58,23 @@ public class SpecsEvaluator {
             List<String> returnsFile = Util.extractVariableNames(returnsRaw);
 
             for (int i = 0; i < paramsFile.size(); i++) {
-                if (specsConditionsFile.get("precondition") == null) {
-                    specsConditionsFile.put("precondition", "false");
+                if (specsConditionsFile.get("precondition") == null || specsConditionsFile.get("precondition").isEmpty()) {
+                    specsConditionsFile.put("precondition", "true");
                     break;
                 }
                 String newPrecondition = specsConditionsFile.get("precondition").replaceAll(paramsFile.get(i), params.get(i));
                 String newPreconditionOriginal = specsConditions.get("precondition").replaceAll(";", "");
                 specsConditionsFile.put("precondition", newPrecondition);
                 specsConditions.put("precondition", newPreconditionOriginal);
-                String newPostcondition = specsConditionsFile.get("postcondition").replaceAll(paramsFile.get(i), params.get(i));
+                String newPostcondition = specsConditionsFile.get("postcondition").replaceAll("(?<!r)" + Pattern.quote(paramsFile.get(i)) + "(?!l)", params.get(i));
                 specsConditionsFile.put("postcondition", newPostcondition);
             }
             for (int i = 0; i < returnsFile.size(); i++) {
-                if (specsConditionsFile.get("postcondition") == null) {
-                    specsConditionsFile.put("postcondition", "false");
+                if (specsConditionsFile.get("postcondition") == null || specsConditionsFile.get("postcondition").isEmpty()) {
+                    specsConditionsFile.put("postcondition", "true");
                     break;
                 }
-                String newPostcondition = specsConditionsFile.get("postcondition").replaceAll(returnsFile.get(i), returns.get(i));
+                String newPostcondition = specsConditionsFile.get("postcondition").replaceAll("(?<!r)" + Pattern.quote(returnsFile.get(i)) + "(?!l)", returns.get(i));
                 newPostcondition = newPostcondition.replaceAll( ";", "");
                 specsConditionsFile.put("postcondition", newPostcondition);
                 String newPostconditionOriginal = specsConditions.get("postcondition").replaceAll(";", "");

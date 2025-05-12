@@ -25,9 +25,9 @@ public class CodeRunner {
         command.add("src/main/resources/pythonCode.py");
         for (Map.Entry<String, Object> entry : inputsFromAlloy.entrySet()) {
             if (entry.getValue() instanceof ArrayList<?>) {
-                String value = entry.getValue().toString();
-                value = value.replace("[", "").replace("]", "");
-                command.add(value);
+                for (Object item : (ArrayList<?>) entry.getValue()) {
+                    command.add(item.toString());
+                }
             } else {
                 command.add(entry.getValue().toString());
             }

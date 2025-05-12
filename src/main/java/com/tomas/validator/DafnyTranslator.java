@@ -75,7 +75,7 @@ public class DafnyTranslator {
             if (!condition.isEmpty()) {
                 condition.append(" && ");
             }
-            condition.append(cond);
+            condition.append("( ").append(cond).append(" )");
         }
         return condition.toString();
     }
@@ -185,9 +185,7 @@ public class DafnyTranslator {
         String specs = translator.extractVariables(dafnyCode);
         String methodSignature = translator.extractMethodSignature(dafnyCode);
         Map<String, String> dafnySpecs = translator.extractSpecs(dafnyCode);
-        String comp = translator.normalizeComparation("x > y > z");
 
-        System.out.println("Normalized Comparison: " + comp);
         System.out.println("Extracted Variables: " + dafnySpecs);
         System.out.println("Specs: " + specs);
         System.out.println("Method Signature: " + methodSignature);

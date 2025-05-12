@@ -15,13 +15,13 @@ public class EvaluationResultWriter {
 
     public void writeCsv() {
         try (FileWriter writer = new FileWriter("src/main/java/com/tomas/evaluation/results.csv")) {
-            writer.write("task_id,specs_eval,code_eval,consistency_eval,dafny_repo_pointer,my_repo_code_pointer\n");
+            writer.write("task_id,specs_eval,code_eval,consistency_eval,code,specs,dafny_repo_pointer,my_repo_code_pointer\n");
             for (EvaluationResult result : results) {
                 writer.write(
                             result.taskId + "," +
                                 result.specsEval + "," +
                                 result.codeEval + "," +
-                                result.consistencyEval +
+                                result.consistencyEval + "," +
                                 result.repoDafny + "," +
                                 result.myRepoCode + "\n"
                 );

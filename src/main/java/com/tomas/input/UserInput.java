@@ -22,6 +22,7 @@ public class UserInput {
     private final AlloyRunner alloyRunner;
     private final FinalValidation finalValidation;
     private final RestTemplate restTemplate = new RestTemplate();
+    private int retryCount = 0;
 
     public UserInput(AlloyRunner alloyRunner, FinalValidation finalValidation) {
         this.alloyRunner = alloyRunner;
@@ -29,7 +30,7 @@ public class UserInput {
     }
 
     @PostMapping
-    public InputResponse userInput(@RequestBody String message) throws IOException, ScriptException {
+    public InputResponse userInput(@RequestBody String message) throws IOException {
         String specs = restTemplate.postForObject("http://localhost:8080/specs-generator", message, String.class);
         /*String specs = " ```dafny\n" +
                 "method FindKthElement(arr: array<int>, k: int) returns (elem: int)\n" +
@@ -39,14 +40,18 @@ public class UserInput {
                 "  // Logic to find the kth element in the given array\n" +
                 "}\n" +
                 "```";*/
-        Set<Map<String,Object>> inputsFromAlloy = alloyRunner.runAlloyModel(specs);
-
         double result;
         try {
+            Set<Map<String,Object>> inputsFromAlloy = alloyRunner.runAlloyModel(specs);
             result = finalValidation.conditionParser(inputsFromAlloy, message);
-        } catch (NullOutputException e) {
+        } catch (NullOutputException | NullPointerException | IndexOutOfBoundsException e) {
             System.out.println("Retrying full flow due to: " + e.getMessage());
-            return userInput(message); // retry the whole pipeline once
+            retryCount++;
+            if (retryCount > 3) {
+                retryCount = 0;
+                return new InputResponse(-1.0, "Error: Max retries reached (error building alloy model)", specs);
+            }
+            return userInput(message);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
