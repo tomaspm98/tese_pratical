@@ -16,7 +16,7 @@ public class DafnyToAlloyConverter {
 
     public String constructPrecondition(Map<String, String> specs, List<String> inputVars) {
         String precondition = specs.get("precondition");
-        if (precondition == null || precondition.isEmpty() || precondition.equals("true") || precondition.equals("true;")) {
+        if (precondition == null || precondition.isEmpty() || precondition.equals("( true )") || precondition.equals("( true; )")) {
             return "1=1";
         }
 

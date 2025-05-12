@@ -13,7 +13,7 @@ public class LLMSpecsService {
     private static final RestTemplate restTemplate = new RestTemplate();
     private static final String codeRequest = "Generate specifications in Dafny (only the code in Dafny language, the language is presented in https://dafny.org/), " +
                         "don't produce any natural language or code comments, only the code I ask you containing pre-conditions " +
-                        "(only when strictly necessary and essential for the program logic, represented with requires, all in 1 line), " +
+                        "(only when strictly necessary and essential for the program logic otherwise don't produce any pre-condition, and don't include pre-conditions for the integer range since int is already bounded, represented with requires, all in 1 line), " +
                         "post-conditions (only when necessary, represented with ensures, all in 1 line, under the pre-conditions) " +
                         "and the logic code to the natural language problem presented below, without using int.minValue and int.MaxValue that aren't valid " +
                         "and only containing valid alloy syntax on Dafny, and write only methods whose the only signature accepted is " +

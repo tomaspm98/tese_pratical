@@ -28,6 +28,12 @@ public class SpecsEvaluator {
             specsConditions.put("postcondition", "false");
             System.out.println("Failed to get postcondition!");
         }
+        if (specsConditions.get("precondition").isEmpty()) {
+            specsConditions.put("precondition", "true");
+        }
+        if (specsConditions.get("postcondition").isEmpty()) {
+            specsConditions.put("postcondition", "true");
+        }
         String methodSignature = dafnyTranslator.extractMethodSignature(specs);
         List<String> params = new ArrayList<>();
         List<String> returns = new ArrayList<>();
