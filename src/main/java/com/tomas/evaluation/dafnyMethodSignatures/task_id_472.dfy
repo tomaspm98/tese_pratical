@@ -1,0 +1,1 @@
+method ContainsConsecutiveNumbers(a: array<int>) returns (result: bool)

@@ -1,0 +1,1 @@
+method SumOfSquaresOfFirstNOddNumbers(n: int) returns (sum: int)

@@ -1,0 +1,1 @@
+method SumAndAverage(n: int) returns (sum: int, average: real)

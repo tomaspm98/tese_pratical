@@ -1,0 +1,1 @@
+method FirstEvenOddIndices(lst : seq<int>) returns (evenIndex: int, oddIndex : int)

@@ -1,0 +1,1 @@
+method LastPosition(arr: array<int>, elem: int) returns (pos: int)

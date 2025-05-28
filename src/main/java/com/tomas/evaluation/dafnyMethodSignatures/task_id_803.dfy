@@ -1,0 +1,1 @@
+method IsPerfectSquare(n: int) returns (result: bool)

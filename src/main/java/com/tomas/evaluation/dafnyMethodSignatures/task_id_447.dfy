@@ -1,0 +1,1 @@
+method CubeElements(a: array<int>) returns (cubed: array<int>)

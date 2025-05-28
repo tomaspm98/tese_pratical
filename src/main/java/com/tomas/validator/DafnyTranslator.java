@@ -34,6 +34,11 @@ public class DafnyTranslator {
                 String precondition = requiresMatcher.group(1);
                 precondition = precondition.replaceAll(";", "");
                 precondition = precondition.replaceAll("//.*", "");
+                String chainedComparison = "\\b(\\S+)\\s*(<|<=)\\s*(\\S+)\\s*(<|<=)\\s*(\\S+)\\b";
+                Matcher chainedComparisonMatcher = Pattern.compile(chainedComparison).matcher(precondition);
+                if (chainedComparisonMatcher.find() && !precondition.contains("forall") && !precondition.contains("exists")) {
+                    precondition = normalizeComparation(precondition);
+                }
                 preconditions.add(precondition);
             }
 
@@ -41,6 +46,11 @@ public class DafnyTranslator {
                 String postcondition = ensuresMatcher.group(1);
                 postcondition = postcondition.replaceAll(";", "");
                 postcondition = postcondition.replaceAll("//.*", "");
+                String chainedComparison = "\\b(\\w+)\\s*(<|<=)\\s*(\\w+)\\s*(<|<=)\\s*(\\w+)\\b";
+                Matcher chainedComparisonMatcher = Pattern.compile(chainedComparison).matcher(postcondition);
+                if (chainedComparisonMatcher.find()) {
+                    postcondition = normalizeComparation(postcondition);
+                }
                 postconditions.add(postcondition);
             }
             specs.put("precondition", constructOneCondition(preconditions));
@@ -51,22 +61,16 @@ public class DafnyTranslator {
     }
 
     private String normalizeComparation(String expression) {
-        String[] tokens = expression.split("(?<=[<>]=?|>)|(?=[<>]=?|<>)");
-        StringBuilder result = new StringBuilder();
+        expression = expression.replaceAll("\\s+", " ");
 
-        for (int i = 0; i < tokens.length; i++) {
-            tokens[i] = tokens[i].trim();
-        }
+        String[] tokens = expression.split(" ");
+        String left = tokens[0];
+        String operator1 = tokens[1];
+        String middle = tokens[2];
+        String operator2 = tokens[3];
+        String right = tokens[4];
 
-        if (tokens.length == 5) {
-            String left = tokens[0] + " " + tokens[1] + " " + tokens[2];
-            String right = tokens[2] + " " + tokens[3] + " " + tokens[4];
-            result.append(left).append(" && ").append(right);
-        } else {
-            result.append(expression);
-        }
-
-        return result.toString();
+        return String.format("%s %s %s && %s %s %s", left, operator1, middle, middle, operator2, right);
     }
 
     private String constructOneCondition(List<String> conditions) {
@@ -185,7 +189,10 @@ public class DafnyTranslator {
         String specs = translator.extractVariables(dafnyCode);
         String methodSignature = translator.extractMethodSignature(dafnyCode);
         Map<String, String> dafnySpecs = translator.extractSpecs(dafnyCode);
+        String expression = "a < b <= c";
+        String normalizedExpression = translator.normalizeComparation(expression);
 
+        System.out.println("Normalized Expression: " + normalizedExpression);
         System.out.println("Extracted Variables: " + dafnySpecs);
         System.out.println("Specs: " + specs);
         System.out.println("Method Signature: " + methodSignature);

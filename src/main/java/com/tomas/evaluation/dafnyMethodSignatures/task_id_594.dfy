@@ -1,0 +1,1 @@
+method FirstEvenOddDifference(a: array<int>) returns (diff: int)

@@ -1,0 +1,1 @@
+method CubeSurfaceArea(size: int) returns (area: int)

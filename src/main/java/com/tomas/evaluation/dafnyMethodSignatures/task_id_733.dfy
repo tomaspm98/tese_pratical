@@ -1,0 +1,1 @@
+method FindFirstOccurrence(arr: array<int>, target: int) returns (index: int)

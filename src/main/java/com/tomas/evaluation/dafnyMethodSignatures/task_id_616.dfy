@@ -1,0 +1,1 @@
+method ElementWiseModulo(a: array<int>, b: array<int>) returns (result: array<int>)

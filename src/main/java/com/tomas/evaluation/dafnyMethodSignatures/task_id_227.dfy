@@ -1,0 +1,1 @@
+method MinOfThree(a: int, b: int, c: int) returns (min: int)

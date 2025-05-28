@@ -1,0 +1,1 @@
+method RotateRight(l: seq<int>, n: int) returns (r: seq<int>)

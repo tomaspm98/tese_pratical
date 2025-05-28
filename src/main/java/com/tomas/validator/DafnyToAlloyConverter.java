@@ -21,14 +21,38 @@ public class DafnyToAlloyConverter {
         }
 
         for (String var : inputVars) {
-            precondition = precondition.replaceAll("\\b" + var + "\\b", "i." + var);
+            precondition = precondition.replaceAll("\\b" + var + "\\b", "input." + var);
         }
         precondition = precondition.replaceAll("(\\b[\\w.]+)\\.Length", "#$1");
         precondition = precondition.replaceAll("\\|(.+?)\\|", "#$1");
-        precondition = precondition.replaceAll("i\\.(\\w+)(\\s*!=\\s*\\[\\s*])", "some i.$1");
+        precondition = precondition.replaceAll("i\\.(\\w+)(\\s*!=\\s*\\[\\s*])", "some input.$1");
         precondition = precondition.replaceAll("(\\w+(?:\\.\\w+)*)\\s*!=\\s*null", "some $1");
         precondition = precondition.replaceAll("(\\w+(?:\\.\\w+)*)\\s*!=\\s*\"\"", "some $1");
+        if (precondition.contains("forall")) {
+            Pattern pattern = Pattern.compile("forall\\s+([^:]+)::");
+            Matcher matcher = pattern.matcher(precondition);
+            if (matcher.find()) {
+                String variables = matcher.group(1);
+                if (variables.contains(",")) {
+                    precondition = transformComplexForallDafny(precondition);
+                } else {
+                    precondition = transformSimpleForallDafny(precondition);
+                }
+            }
+        }
         return precondition;
+    }
+
+    public String transformSimpleForallDafny(String input) {
+        String pattern = "forall\\s+(\\w+)\\s*::\\s*(\\d+)\\s*<=\\s*\\1\\s*<\\s*([^=]+)==>\\s*(.+)";
+        return input.replaceAll(pattern,
+                "all $1: Int | $1 >= $2 and $1 < $3 => $4");
+    }
+
+    public String transformComplexForallDafny(String input) {
+        String pattern = "forall\\s+(\\w+)\\s*,\\s*(\\w+)\\s*::\\s*(\\d+)\\s*<=\\s*\\1\\s*<\\s*\\2\\s*<\\s*([^=]+)==>\\s*(.+)";
+        return input.replaceAll(pattern,
+                "all $1: Int | all $2: Int | $1 >= $3 and $1 < $2 and $2 < $4 => $5");
     }
 
     private List<String> extractInputVariables(String expression){
@@ -128,7 +152,7 @@ public class DafnyToAlloyConverter {
                     %s
                     
                     fact Preconditions {
-                        all i: Input | %s
+                        all input: Input | %s
                     }
                     
                     fact {

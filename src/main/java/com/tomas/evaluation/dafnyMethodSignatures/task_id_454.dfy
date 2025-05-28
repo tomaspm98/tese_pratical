@@ -1,0 +1,1 @@
+method ContainsZ(s: string) returns (result: bool)

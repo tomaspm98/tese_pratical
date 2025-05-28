@@ -1,0 +1,1 @@
+method RemoveElement(s: array<int>, k: int) returns (v: array<int>)

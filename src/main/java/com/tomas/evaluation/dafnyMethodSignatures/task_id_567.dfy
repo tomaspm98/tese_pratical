@@ -1,0 +1,1 @@
+method IsSorted(a: array<int>) returns (sorted: bool)

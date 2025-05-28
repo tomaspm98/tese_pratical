@@ -1,0 +1,1 @@
+method IsOddAtIndexOdd(a: array<int>) returns (result: bool)

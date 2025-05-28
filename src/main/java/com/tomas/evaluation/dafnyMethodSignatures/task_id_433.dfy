@@ -1,0 +1,1 @@
+method IsGreater(n: int, a: array<int>) returns (result: bool)

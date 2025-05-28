@@ -1,0 +1,1 @@
+method IsEven(n: int) returns (result: bool)

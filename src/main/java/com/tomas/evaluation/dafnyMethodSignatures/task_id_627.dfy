@@ -1,0 +1,1 @@
+method SmallestMissingNumber(s: seq<int>) returns (v: int)

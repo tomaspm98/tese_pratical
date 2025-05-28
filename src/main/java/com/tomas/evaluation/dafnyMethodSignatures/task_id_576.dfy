@@ -1,0 +1,1 @@
+method IsSublist(sub: seq<int>, main: seq<int>) returns (result: bool)

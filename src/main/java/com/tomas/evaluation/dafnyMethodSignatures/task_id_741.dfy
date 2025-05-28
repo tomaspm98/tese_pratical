@@ -1,0 +1,1 @@
+method AllCharactersSame(s: string) returns (result: bool)

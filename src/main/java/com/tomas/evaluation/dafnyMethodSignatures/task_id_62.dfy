@@ -1,0 +1,1 @@
+method FindSmallest(s: array<int>) returns (min: int)

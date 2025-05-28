@@ -11,6 +11,7 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,8 +31,8 @@ public class UserInput {
     }
 
     @PostMapping
-    public InputResponse userInput(@RequestBody String message) throws IOException {
-        String specs = restTemplate.postForObject("http://localhost:8080/specs-generator", message, String.class);
+    public InputResponse userInput(@RequestBody List<String> message) throws IOException {
+        String specs = restTemplate.postForObject("http://localhost:8080/specs-generator", message.getFirst(), String.class);
         /*String specs = " ```dafny\n" +
                 "method FindKthElement(arr: array<int>, k: int) returns (elem: int)\n" +
                 "  requires 0 <= k && k < arr.Length\n" +
@@ -43,7 +44,7 @@ public class UserInput {
         double result;
         try {
             Set<Map<String,Object>> inputsFromAlloy = alloyRunner.runAlloyModel(specs);
-            result = finalValidation.conditionParser(inputsFromAlloy, message);
+            result = finalValidation.conditionParser(inputsFromAlloy, message.get(1));
         } catch (NullOutputException | NullPointerException | IndexOutOfBoundsException e) {
             System.out.println("Retrying full flow due to: " + e.getMessage());
             retryCount++;

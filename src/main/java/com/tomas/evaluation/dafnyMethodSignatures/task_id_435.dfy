@@ -1,0 +1,1 @@
+method LastDigit(n: int) returns (d: int)

@@ -1,0 +1,1 @@
+method Min(a: int, b: int) returns (minValue: int)

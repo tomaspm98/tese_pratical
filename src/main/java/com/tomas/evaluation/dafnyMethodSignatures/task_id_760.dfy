@@ -1,0 +1,1 @@
+method HasOnlyOneDistinctElement(a: array<int>) returns (result: bool)

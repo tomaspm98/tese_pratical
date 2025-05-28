@@ -1,0 +1,1 @@
+method ReverseUptoK(s: array<int>, k: int)

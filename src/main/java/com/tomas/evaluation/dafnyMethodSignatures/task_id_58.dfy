@@ -1,0 +1,1 @@
+method HasOppositeSign(a: int, b: int) returns (result: bool)

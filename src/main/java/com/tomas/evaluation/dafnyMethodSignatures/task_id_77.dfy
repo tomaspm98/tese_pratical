@@ -1,0 +1,1 @@
+method IsDivisibleBy11(n: int) returns (result: bool)

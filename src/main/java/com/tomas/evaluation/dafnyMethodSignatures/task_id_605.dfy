@@ -1,0 +1,1 @@
+method IsPrime(n: int) returns (result: bool)

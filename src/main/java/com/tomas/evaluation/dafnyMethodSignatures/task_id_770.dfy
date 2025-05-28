@@ -1,0 +1,1 @@
+method SumOfFourthPowerOfOddNumbers(n: int) returns (sum: int)
