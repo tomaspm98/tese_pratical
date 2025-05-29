@@ -2,6 +2,8 @@ import sys
 import math
 
 def is_Perfect_Square(n):
+    if n < 0:
+        return False
     root = int(math.sqrt(n))
     return root * root == n
 

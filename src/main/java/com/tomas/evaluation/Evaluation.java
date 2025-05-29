@@ -36,11 +36,13 @@ public class Evaluation {
         String message = codeTask.getText().toUpperCase();
         Path pathAsserts = Path.of("src/main/java/com/tomas/evaluation/dafnyAsserts/task_id_" + codeTask.getTask_id() + ".dfy");
         Path pathSignature = Path.of("src/main/java/com/tomas/evaluation/dafnyMethodSignatures/task_id_" + codeTask.getTask_id() + ".dfy");
+        Path pathPythonReturns = Path.of("src/main/java/com/tomas/evaluation/pythonTypeReturns/task_id_" + codeTask.getTask_id() + ".txt");
         String dafnyMessageSignature = "\nThis is the template of the method you will produce, so you must write the preconditions (if needed) and postconditions where is written '//conditions' (deleting this comment) and the method's body where is written '//body' (deleting this comment), and do not modify this code; just add the conditions and the body:\n\n" + Files.readString(pathSignature) + "\n//conditions\n{\n//body\n}\n";
-        String pythonSignature = "\nThis is the signature of the method you will produce:\n\n" + extractPythonMethodSignature(codeTask.getCode()) + "\n\n";
+        String pythonSignature = "\nThis is the header of the method you will produce:\n\n" + extractPythonMethodSignature(codeTask.getCode()) + "\n\n";
+        String pythonReturnType = "This is the return type of the method you will produce: " + Files.readString(pathPythonReturns) + "\n\n";
         String messageAsserts = "Your method must pass in the following Dafny assertions:\n\n" + Files.readString(pathAsserts);
         String dafnyMessage = message + messageAsserts + dafnyMessageSignature;
-        String pythonMessage = message + pythonSignature;
+        String pythonMessage = message + pythonSignature + pythonReturnType;
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<List<String>> entity = new HttpEntity<>(List.of(dafnyMessage, pythonMessage), headers);
         ResponseEntity<InputResponse> response = restTemplate.exchange(url, HttpMethod.POST, entity, InputResponse.class);

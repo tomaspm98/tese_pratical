@@ -1,0 +1,1 @@
+method FindFirstOdd(a: array<int>) returns (found: bool, index: int)

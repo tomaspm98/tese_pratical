@@ -1,0 +1,1 @@
+method UniqueProduct (arr: array<int>) returns (product: int)

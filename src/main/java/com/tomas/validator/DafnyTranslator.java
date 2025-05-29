@@ -46,11 +46,6 @@ public class DafnyTranslator {
                 String postcondition = ensuresMatcher.group(1);
                 postcondition = postcondition.replaceAll(";", "");
                 postcondition = postcondition.replaceAll("//.*", "");
-                String chainedComparison = "\\b(\\w+)\\s*(<|<=)\\s*(\\w+)\\s*(<|<=)\\s*(\\w+)\\b";
-                Matcher chainedComparisonMatcher = Pattern.compile(chainedComparison).matcher(postcondition);
-                if (chainedComparisonMatcher.find()) {
-                    postcondition = normalizeComparation(postcondition);
-                }
                 postconditions.add(postcondition);
             }
             specs.put("precondition", constructOneCondition(preconditions));

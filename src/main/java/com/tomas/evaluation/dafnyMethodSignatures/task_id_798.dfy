@@ -1,1 +1,1 @@
-function sumTo( a:array<int>, n:int ) : int
+method ArraySum(a: array<int>) returns (result: int)

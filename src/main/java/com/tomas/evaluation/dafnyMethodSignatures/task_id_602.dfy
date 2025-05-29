@@ -1,0 +1,1 @@
+method FindFirstRepeatedChar(s: string) returns (found: bool, c: char)

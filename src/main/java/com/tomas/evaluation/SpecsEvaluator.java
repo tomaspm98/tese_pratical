@@ -102,6 +102,18 @@ public class SpecsEvaluator {
 
     public String generate(String variables, String cond1, String cond2, String auxiliarFunctions) {
         String paramNames = extractParamNames(variables);
+        //Para adicionar reads quando as funções usam arrays
+        List<String> readsStatements = new ArrayList<>();
+        Matcher arrayMatcher = Pattern.compile("\\b(\\w+)\\s*:\\s*array<[^>]+>").matcher(variables);
+        while (arrayMatcher.find()) {
+            String nameVar = arrayMatcher.group(1);
+            readsStatements.add("reads " + nameVar);
+        }
+        String finalReads = "";
+        if (!readsStatements.isEmpty()) {
+            finalReads = String.join("\n ", readsStatements);
+        }
+
         return """
             lemma CheckEquivalence()
               ensures forall %s :: Cond1(%s) <==> Cond2(%s)
@@ -109,31 +121,37 @@ public class SpecsEvaluator {
               forall %s
                 ensures Cond1(%s) <==> Cond2(%s)
               {
-                if Cond1(%s) {
+                if Cond1(%s)
+                {
                   assert Cond2(%s);
                 }
-                if Cond2(%s) {
+                if Cond2(%s)
+                {
                   assert Cond1(%s);
                 }
               }
             }
 
-            function Cond1(%s): bool {
+            function Cond1(%s): bool
+            %s
+            {
               %s
             }
 
-            function Cond2(%s): bool {
+            function Cond2(%s): bool
+            %s
+            {
               %s
             }
-            
+           \s
             %s
-            """
+           \s"""
                 .formatted(
                         variables, paramNames, paramNames,
                         variables, paramNames, paramNames,
                         paramNames, paramNames, paramNames, paramNames,
-                        variables, cond1,
-                        variables, cond2,
+                        variables, finalReads, cond1,
+                        variables, finalReads, cond2,
                         auxiliarFunctions
                 );
     }
@@ -205,7 +223,12 @@ public class SpecsEvaluator {
                 """;
 
         SpecsEvaluator specsEvaluator = new SpecsEvaluator();
-        String ok = specsEvaluator.extractAuxiliarFunctions(code);
+        String ok = specsEvaluator.generate(
+                "s: array<string>, count: array<int>",
+                "count >= 0 && count == | set i: int | 0 <= i < |s| && IsDigit(s[i])",
+                "count >= 0 && count == | set i: int | 0 <= i < |s| && IsDigit(s[i])",
+                specsEvaluator.extractAuxiliarFunctions(code)
+        );
         System.out.println(ok);
     }
 }
