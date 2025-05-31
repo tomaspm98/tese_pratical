@@ -15,7 +15,7 @@ import java.util.*;
 public class AlloyRunner {
 
     private DafnyToAlloyConverter dafnyToAlloyConverter;
-    private static final int NUMBER_OF_INPUTS_FROM_ALLOY = 10;
+    private static final int NUMBER_OF_INPUTS_FROM_ALLOY = 100;
 
     public AlloyRunner(DafnyToAlloyConverter dafnyToAlloyConverter) {
         this.dafnyToAlloyConverter = dafnyToAlloyConverter;

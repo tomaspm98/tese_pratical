@@ -14,7 +14,7 @@ def main():
     
     number = int(sys.argv[1])
     result = is_Perfect_Square(number)
-    print(result)
+    print((result,)) if result else print(False)
 
 if __name__ == "__main__":
     main()
