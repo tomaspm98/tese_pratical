@@ -6,10 +6,7 @@ import com.tomas.validator.DafnyTranslator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,20 +16,26 @@ public class SpecsEvaluator {
     DafnyTranslator dafnyTranslator = new DafnyTranslator();
 
     public boolean evaluateSpecs(String specs, int task_id) throws IOException, InterruptedException {
-        Map<String, String> specsConditions = dafnyTranslator.extractSpecs(specs);
-        if (!specsConditions.containsKey("precondition")) {
-            specsConditions.put("precondition", "false");
+        Map<String, List<String>> specsConditions = dafnyTranslator.extractSpecs(specs);
+        Map<String, String> specsConditionsIndividual = new HashMap<>();
+        Map<String, String> specsConditionsFileIndividual = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : specsConditions.entrySet()) {
+            String individualCondition = dafnyTranslator.constructOneCondition(entry.getValue());
+            specsConditionsIndividual.put(entry.getKey(), individualCondition);
+        }
+        if (!specsConditionsIndividual.containsKey("precondition")) {
+            specsConditionsIndividual.put("precondition", "false");
             System.out.println("Failed to get precondition!");
         }
-        if (!specsConditions.containsKey("postcondition")) {
-            specsConditions.put("postcondition", "false");
+        if (!specsConditionsIndividual.containsKey("postcondition")) {
+            specsConditionsIndividual.put("postcondition", "false");
             System.out.println("Failed to get postcondition!");
         }
-        if (specsConditions.get("precondition").isEmpty()) {
-            specsConditions.put("precondition", "true");
+        if (specsConditionsIndividual.get("precondition").isEmpty()) {
+            specsConditionsIndividual.put("precondition", "true");
         }
-        if (specsConditions.get("postcondition").isEmpty()) {
-            specsConditions.put("postcondition", "true");
+        if (specsConditionsIndividual.get("postcondition").isEmpty()) {
+            specsConditionsIndividual.put("postcondition", "true");
         }
         String methodSignature = dafnyTranslator.extractMethodSignature(specs);
         List<String> params = new ArrayList<>();
@@ -47,12 +50,23 @@ public class SpecsEvaluator {
             params = Util.extractVariableNames(paramsRaw);
             returns = Util.extractVariableNames(returnsRaw);
             variables = paramsRaw + ", " + returnsRaw;
+        } else {
+            Matcher matcherWithoutReturns = Pattern.compile("method\\s+\\w+\\s*\\(([^)]*)\\)").matcher(methodSignature);
+            if (matcherWithoutReturns.find()) {
+                String paramsRaw = matcherWithoutReturns.group(1);
+                params = Util.extractVariableNames(paramsRaw);
+                variables = paramsRaw;
+            }
         }
 
         String taskIdFile = "task_id_" + task_id + ".dfy";
         String codeInFile = Files.readString(Path.of("src/main/java/com/tomas/evaluation/dafny/" + taskIdFile));
 
-        Map<String, String> specsConditionsFile = dafnyTranslator.extractSpecs(codeInFile);
+        Map<String, List<String>> specsConditionsFile = dafnyTranslator.extractSpecs(codeInFile);
+        for (Map.Entry<String, List<String>> entry : specsConditionsFile.entrySet()) {
+            String individualCondition = dafnyTranslator.constructOneCondition(entry.getValue());
+            specsConditionsFileIndividual.put(entry.getKey(), individualCondition);
+        }
         String methodSignatureFile = dafnyTranslator.extractMethodSignature(codeInFile);
 
         Matcher matcherFile = Pattern.compile("method\\s+\\w+\\s*\\(([^)]*)\\)\\s+returns\\s*\\(([^)]*)\\)").matcher(methodSignatureFile);
@@ -64,33 +78,53 @@ public class SpecsEvaluator {
             List<String> returnsFile = Util.extractVariableNames(returnsRaw);
 
             for (int i = 0; i < paramsFile.size(); i++) {
-                if (specsConditionsFile.get("precondition") == null || specsConditionsFile.get("precondition").isEmpty()) {
-                    specsConditionsFile.put("precondition", "true");
+                if (specsConditionsFileIndividual.get("precondition") == null || specsConditionsFileIndividual.get("precondition").isEmpty()) {
+                    specsConditionsFileIndividual.put("precondition", "true");
                     break;
                 }
-                String newPrecondition = specsConditionsFile.get("precondition").replaceAll(paramsFile.get(i), params.get(i));
-                String newPreconditionOriginal = specsConditions.get("precondition").replaceAll(";", "");
-                specsConditionsFile.put("precondition", newPrecondition);
-                specsConditions.put("precondition", newPreconditionOriginal);
-                String newPostcondition = specsConditionsFile.get("postcondition").replaceAll("(?<!r)" + Pattern.quote(paramsFile.get(i)) + "(?!l)", params.get(i));
-                specsConditionsFile.put("postcondition", newPostcondition);
+                String newPrecondition = specsConditionsFileIndividual.get("precondition").replaceAll(paramsFile.get(i), params.get(i));
+                String newPreconditionOriginal = specsConditionsIndividual.get("precondition").replaceAll(";", "");
+                specsConditionsFileIndividual.put("precondition", newPrecondition);
+                specsConditionsIndividual.put("precondition", newPreconditionOriginal);
+                String newPostcondition = specsConditionsFileIndividual.get("postcondition").replaceAll("(?<!r)" + Pattern.quote(paramsFile.get(i)) + "(?!l)", params.get(i));
+                specsConditionsFileIndividual.put("postcondition", newPostcondition);
             }
             for (int i = 0; i < returnsFile.size(); i++) {
-                if (specsConditionsFile.get("postcondition") == null || specsConditionsFile.get("postcondition").isEmpty()) {
-                    specsConditionsFile.put("postcondition", "true");
+                if (specsConditionsFileIndividual.get("postcondition") == null || specsConditionsFileIndividual.get("postcondition").isEmpty()) {
+                    specsConditionsFileIndividual.put("postcondition", "true");
                     break;
                 }
-                String newPostcondition = specsConditionsFile.get("postcondition").replaceAll("(?<!r)" + Pattern.quote(returnsFile.get(i)) + "(?!l)", returns.get(i));
+                String newPostcondition = specsConditionsFileIndividual.get("postcondition").replaceAll("(?<!r)" + Pattern.quote(returnsFile.get(i)) + "(?!l)", returns.get(i));
                 newPostcondition = newPostcondition.replaceAll( ";", "");
-                specsConditionsFile.put("postcondition", newPostcondition);
-                String newPostconditionOriginal = specsConditions.get("postcondition").replaceAll(";", "");
-                specsConditions.put("postcondition", newPostconditionOriginal);
+                specsConditionsFileIndividual.put("postcondition", newPostcondition);
+                String newPostconditionOriginal = specsConditionsIndividual.get("postcondition").replaceAll(";", "");
+                specsConditionsIndividual.put("postcondition", newPostconditionOriginal);
+            }
+        } else {
+            Matcher matcherWithoutReturnsFile = Pattern.compile("method\\s+\\w+\\s*\\(([^)]*)\\)").matcher(methodSignatureFile);
+            if (matcherWithoutReturnsFile.find()) {
+                String paramsRaw = matcherWithoutReturnsFile.group(1);
+
+                List<String> paramsFile = Util.extractVariableNames(paramsRaw);
+
+                for (int i = 0; i < paramsFile.size(); i++) {
+                    if (specsConditionsFileIndividual.get("precondition") == null || specsConditionsFileIndividual.get("precondition").isEmpty()) {
+                        specsConditionsFileIndividual.put("precondition", "true");
+                        break;
+                    }
+                    String newPrecondition = specsConditionsFileIndividual.get("precondition").replaceAll(paramsFile.get(i), params.get(i));
+                    String newPreconditionOriginal = specsConditionsIndividual.get("precondition").replaceAll(";", "");
+                    specsConditionsFileIndividual.put("precondition", newPrecondition);
+                    specsConditionsIndividual.put("precondition", newPreconditionOriginal);
+                    String newPostcondition = specsConditionsFileIndividual.get("postcondition").replaceAll("(?<!r)" + Pattern.quote(paramsFile.get(i)) + "(?!l)", params.get(i));
+                    specsConditionsFileIndividual.put("postcondition", newPostcondition);
+                }
             }
         }
 
         String auxiliarFunctions = extractAuxiliarFunctions(codeInFile);
 
-        return equivalentConditions(variables, specsConditions.get("precondition"), specsConditionsFile.get("precondition"), auxiliarFunctions) && equivalentConditions(variables, specsConditions.get("postcondition"), specsConditionsFile.get("postcondition"), auxiliarFunctions);
+        return equivalentConditions(variables, specsConditionsIndividual.get("precondition"), specsConditionsFileIndividual.get("precondition"), auxiliarFunctions) && equivalentConditions(variables, specsConditionsIndividual.get("postcondition"), specsConditionsFileIndividual.get("postcondition"), auxiliarFunctions);
     }
 
     public boolean equivalentConditions(String variables, String conditionGenerated, String conditionFile, String auxiliarFunctions) throws IOException, InterruptedException {

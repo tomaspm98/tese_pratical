@@ -19,6 +19,7 @@ public class LLMSpecsService {
                         "The preconditions (when necessary) and postconditions are always written under the method signature, and you always need to place a '{' under the last postcondition before writing the method's body." +
                         "Also don't use any built-in math functions or libraries like Math.PI, sqrt() and pow() " +
                         "and only rely on basic arithmetic operations (addition, subtraction, multiplication and division) and never use the Dafny type nat but int instead." +
+                        "The length of an array s is represented by s.Length, while the length of a seq s is represented by |s|." +
                         "Manually define constants when necessary (for example, instead of using Math.pi, use 3.141592653589793) " +
                         "and use array or seq to represent lists in Dafny. Don't use Dafny's built-in tuples (e.g., (a,b)), but instead always represent tuples using arrays. For example, instead of writing (int,int), write array<int>. In Dafny, conjunction is represented by && and disjunction is represented by ||." +
             "Here is an example of how the method in Dafny must be written to be syntactically correct (it contains the method signature, preconditions (when necessary), postconditions and the method body always, and don't forget the parentheses and brackets when writing the code):\n\n" +
@@ -29,7 +30,7 @@ public class LLMSpecsService {
                         {
                           y := x + 1;
                         }
-                    """ + "\n\nNOW, THIS IS YOUR TASK TO SOLVE IN UPPERCASE: ";
+                    """ + "\n\nNOW, THIS IS YOUR TASK IN DAFNY TO SOLVE IN UPPERCASE: ";
     private static final String llmModel = "deepseek-coder-v2:16b";
 
     public String getSpecsResponse(String userMessage) {

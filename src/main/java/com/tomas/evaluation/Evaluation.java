@@ -40,7 +40,7 @@ public class Evaluation {
         String dafnyMessageSignature = "\nThis is the template of the method you will produce, so you must write the preconditions (if needed) and postconditions where is written '//conditions' (deleting this comment) and the method's body where is written '//body' (deleting this comment), and do not modify this code; just add the conditions and the body:\n\n" + Files.readString(pathSignature) + "\n//conditions\n{\n//body\n}\n";
         String pythonSignature = "\nThis is the header of the method you will produce:\n\n" + extractPythonMethodSignature(codeTask.getCode()) + "\n\n";
         String pythonReturnType = "This is the return type of the method you will produce: " + Files.readString(pathPythonReturns) + "\n\n";
-        String messageAsserts = "Your method must pass in the following Dafny assertions:\n\n" + Files.readString(pathAsserts);
+        String messageAsserts = "\nYour method must pass in the following Dafny assertions:\n\n" + Files.readString(pathAsserts);
         String dafnyMessage = message + messageAsserts + dafnyMessageSignature;
         String pythonMessage = message + pythonSignature + pythonReturnType;
         HttpHeaders headers = new HttpHeaders();

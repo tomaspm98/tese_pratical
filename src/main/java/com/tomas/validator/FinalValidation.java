@@ -8,6 +8,7 @@ import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,27 +32,52 @@ public class FinalValidation {
         final int MAX_RETRIES = 3;
         int retries = 0;
         boolean realOutput = false;
+        boolean pairOutput = false;
+        List<String> postconditionsProcessed = new ArrayList<>();
         while (retries < MAX_RETRIES) {
             restTemplate.postForObject("http://localhost:8080/code-generator", message, String.class);
             int counter = 0;
             boolean allOutputsValid = true;
-            String postcondition = dafnyTranslator.getSpecs().get("postcondition");
-            String outputVarName = getOutputVariableName().get(0);
+            List<String> postcondition = dafnyTranslator.getSpecs().get("postcondition");
+            List<String> outputVarNames = getOutputVariableName();
             for (Map<String, Object> input : inputsFromAlloy) {
-                String postcondition_replaced = postcondition;
                 String output = codeRunner.getOutputFromCode(input);
                 if (output == null) {
                     allOutputsValid = false;
                     break;
                 }
-                if (output.contains(".")) {
-                    realOutput = true;
-                    postcondition_replaced = transformDafnyCondition(postcondition_replaced);
+                if (output.contains("(") && output.contains(")") && !output.contains("Traceback")) {
+                    pairOutput = true;
                 }
-                if (output .equals("False")) {
+                if (output.equals("False")) {
                     output = "false";
                 } else if (output.equals("True")) {
                     output = "true";
+                }
+                String postcondition_replaced;
+                if (pairOutput) {
+                    String processedOutput = output.replaceAll("[()]", "");
+                    String[] outputs = processedOutput.split(",");
+                    for (String singlePostcondition: postcondition) {
+                        for (int i = 0; i < outputs.length; i++) {
+                            if (outputVarNames!=null && singlePostcondition.contains(outputVarNames.get(i))) {
+                                if (outputs[i].contains(".")) {
+                                    realOutput = true;
+                                    singlePostcondition= transformDafnyCondition(singlePostcondition);
+                                    singlePostcondition = singlePostcondition.replaceAll(outputVarNames.get(i), outputs[i]);
+                                } else {
+                                    singlePostcondition = singlePostcondition.replaceAll(outputVarNames.get(i), outputs[i]);
+                                }
+                            }
+                        }
+                        postconditionsProcessed.add(singlePostcondition);
+                    }
+                    postcondition_replaced = dafnyTranslator.constructOneCondition(postconditionsProcessed);
+                } else {
+                    postcondition_replaced = dafnyTranslator.constructOneCondition(postcondition);
+                    if (outputVarNames!=null && !outputVarNames.isEmpty()) {
+                        postcondition_replaced = postcondition_replaced.replaceAll(outputVarNames.getFirst(), output);
+                    }
                 }
                 for (Map.Entry<String, Object> entry : input.entrySet()) {
                     postcondition_replaced = postcondition_replaced.replaceAll(
@@ -59,8 +85,8 @@ public class FinalValidation {
                             entry.getValue().toString()
                     );
                 }
-                postcondition_replaced = postcondition_replaced.replaceAll(outputVarName, output);
                 postcondition_replaced = postcondition_replaced.replaceAll(";$", "");
+                postcondition_replaced = postcondition_replaced.replaceAll("(\\[[^\\[\\]]+])\\.Length", "|$1|");
                 String dafnyCode;
                 if (realOutput) {
                     dafnyCode = "function convertToReal(x: int): real {\n  x as real\n}\nmethod Check() {\n  assert " + postcondition_replaced + ";\n}";

@@ -1,7 +1,5 @@
 package com.tomas.validator;
 
-import com.tomas.util.NullOutputException;
-
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,8 +12,9 @@ public class DafnyToAlloyConverter {
         this.dafnyTranslator = dafnyTranslator;
     }
 
-    public String constructPrecondition(Map<String, String> specs, List<String> inputVars) {
-        String precondition = specs.get("precondition");
+    public String constructPrecondition(Map<String, List<String>> specs, List<String> inputVars) {
+        List<String> preconditionList = specs.get("precondition");
+        String precondition = dafnyTranslator.constructOneCondition(preconditionList);
         if (precondition == null || precondition.isEmpty() || precondition.equals("( true )") || precondition.equals("( true; )")) {
             return "1=1";
         }
@@ -28,6 +27,7 @@ public class DafnyToAlloyConverter {
         precondition = precondition.replaceAll("i\\.(\\w+)(\\s*!=\\s*\\[\\s*])", "some input.$1");
         precondition = precondition.replaceAll("(\\w+(?:\\.\\w+)*)\\s*!=\\s*null", "some $1");
         precondition = precondition.replaceAll("(\\w+(?:\\.\\w+)*)\\s*!=\\s*\"\"", "some $1");
+        precondition = precondition.replaceAll("(?<![=!])==", "="); // Em Alloy, == é =
         if (precondition.contains("forall")) {
             Pattern pattern = Pattern.compile("forall\\s+([^:]+)::");
             Matcher matcher = pattern.matcher(precondition);
@@ -63,6 +63,15 @@ public class DafnyToAlloyConverter {
             Matcher varMatcher = Pattern.compile("(\\w+)\\s*:\\s*\\w+").matcher(parameters);
             while (varMatcher.find()) {
                 inputVars.add(varMatcher.group(1));
+            }
+        } else {
+            Matcher matcherWithoutReturns = Pattern.compile("method\\s+\\w+\\(([^)]*)\\)").matcher(expression);
+            if (matcherWithoutReturns.find()) {
+                String parameters = matcherWithoutReturns.group(1);
+                Matcher varMatcher = Pattern.compile("(\\w+)\\s*:\\s*\\w+").matcher(parameters);
+                while (varMatcher.find()) {
+                    inputVars.add(varMatcher.group(1));
+                }
             }
         }
         return inputVars;
@@ -101,7 +110,7 @@ public class DafnyToAlloyConverter {
 
     public String convertToAlloyRun(String code) {
             String methodSignature = dafnyTranslator.extractMethodSignature(code);
-            Map<String, String> dafnySpecs = dafnyTranslator.extractSpecs(code);
+            Map<String, List<String>> dafnySpecs = dafnyTranslator.extractSpecs(code);
             Map<String, String> paramsWithType = dafnyTranslator.parseParamsWithType(dafnyTranslator.extractVariables(methodSignature));
             boolean isString = false;
 
