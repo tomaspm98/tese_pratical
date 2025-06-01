@@ -1,0 +1,1 @@
+method ToCharArray(s: string) returns (a: array<char>)

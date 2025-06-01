@@ -1,0 +1,1 @@
+method MultiplyElements(a: seq<int>, b: seq<int>) returns (result: seq<int>)

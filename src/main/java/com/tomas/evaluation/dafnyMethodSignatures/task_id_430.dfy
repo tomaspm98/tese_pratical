@@ -1,0 +1,1 @@
+method ParabolaDirectrix(a: real, h: real, k: real) returns (directrix: real)

@@ -1,0 +1,1 @@
+method MedianLength(a: int, b: int) returns (median: int)

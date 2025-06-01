@@ -1,0 +1,1 @@
+method SphereSurfaceArea(radius: real) returns (area: real)

@@ -1,0 +1,1 @@
+method PentagonPerimeter(side: int) returns (perimeter: int)

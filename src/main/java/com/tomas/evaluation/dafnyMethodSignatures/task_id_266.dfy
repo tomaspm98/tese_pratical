@@ -1,0 +1,1 @@
+method LateralSurfaceArea(size: int) returns (area: int)

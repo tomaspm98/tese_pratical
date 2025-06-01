@@ -1,0 +1,1 @@
+method MinSecondValueFirst(s: array<seq<int>>) returns (firstOfMinSecond: int)

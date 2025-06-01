@@ -1,0 +1,1 @@
+method DogYears(humanYears: int) returns (dogYears: int)

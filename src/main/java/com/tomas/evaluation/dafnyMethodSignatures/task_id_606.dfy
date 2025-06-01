@@ -1,0 +1,1 @@
+method DegreesToRadians(degrees: real) returns (radians: real)

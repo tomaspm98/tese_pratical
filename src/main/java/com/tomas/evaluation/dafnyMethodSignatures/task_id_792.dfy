@@ -1,0 +1,1 @@
+method CountLists(lists: seq<seq<int>>) returns (count: int)

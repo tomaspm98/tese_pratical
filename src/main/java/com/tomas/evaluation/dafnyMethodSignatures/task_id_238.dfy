@@ -1,0 +1,1 @@
+method CountNonEmptySubstrings(s: string) returns (count: int)

@@ -1,0 +1,1 @@
+method IsOdd(n: int) returns (result: bool)

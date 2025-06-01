@@ -1,0 +1,1 @@
+method MonthHas31Days(month: int) returns (result: bool)

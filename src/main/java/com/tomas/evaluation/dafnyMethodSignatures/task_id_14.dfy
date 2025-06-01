@@ -1,0 +1,1 @@
+method TriangularPrismVolume(base: int, height: int, length: int) returns (volume: int)

@@ -1,0 +1,1 @@
+method SumOfNegatives(a: array<int>) returns (result: int)

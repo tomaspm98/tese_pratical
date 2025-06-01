@@ -1,0 +1,1 @@
+method RectangleArea(length: int, width: int) returns (area: int)

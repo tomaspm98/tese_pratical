@@ -1,0 +1,1 @@
+method SharedElements(a: array<int>, b: array<int>) returns (result: seq<int>)

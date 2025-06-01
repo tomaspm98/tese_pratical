@@ -1,0 +1,1 @@
+method RemoveDuplicates(a: array<int>) returns (result: seq<int>)

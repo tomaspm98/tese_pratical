@@ -1,0 +1,1 @@
+method FindMedian(a: array<int>, b: array<int>) returns (median: int)

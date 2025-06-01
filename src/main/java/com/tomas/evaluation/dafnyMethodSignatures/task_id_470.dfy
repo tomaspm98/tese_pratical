@@ -1,0 +1,1 @@
+method PairwiseAddition(a: array<int>) returns (result: array<int>)

@@ -1,0 +1,1 @@
+method CalculateLoss(costPrice: int, sellingPrice: int) returns (loss: int)

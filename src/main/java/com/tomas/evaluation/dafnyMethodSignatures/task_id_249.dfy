@@ -1,0 +1,1 @@
+method Intersection(a: array<int>, b: array<int>) returns (result: seq<int>)

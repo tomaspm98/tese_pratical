@@ -1,0 +1,1 @@
+method Difference(a: seq<int>, b: seq<int>) returns (diff: seq<int>)

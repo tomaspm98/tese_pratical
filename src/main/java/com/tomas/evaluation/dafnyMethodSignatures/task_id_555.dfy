@@ -1,0 +1,1 @@
+method DifferenceSumCubesAndSumNumbers(n: int) returns (diff: int)

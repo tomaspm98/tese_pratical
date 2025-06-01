@@ -1,0 +1,1 @@
+method NthOctagonalNumber(n: int) returns (octagonalNumber: int)

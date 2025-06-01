@@ -1,0 +1,1 @@
+method NthDecagonalNumber(n: int) returns (decagonal: int)

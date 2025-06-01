@@ -1,0 +1,1 @@
+method StarNumber(n: int) returns (star: int)

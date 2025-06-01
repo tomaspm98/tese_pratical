@@ -1,0 +1,1 @@
+method IsInteger(s: string) returns (result: bool)

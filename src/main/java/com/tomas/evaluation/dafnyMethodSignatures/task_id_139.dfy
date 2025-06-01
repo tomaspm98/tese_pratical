@@ -1,0 +1,1 @@
+method CircleCircumference(radius: real) returns (circumference: real)

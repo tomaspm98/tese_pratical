@@ -1,0 +1,1 @@
+method SquareElements(a: array<int>) returns (squared: array<int>)

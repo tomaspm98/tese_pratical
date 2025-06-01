@@ -1,0 +1,1 @@
+method SmallestListLength(s: seq<seq<int>>) returns (v: int)

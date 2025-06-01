@@ -1,0 +1,1 @@
+method FindNegativeNumbers(arr: array<int>) returns (negativeList: seq<int>)

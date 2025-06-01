@@ -1,0 +1,1 @@
+method ReplaceLastElement(first: seq<int>, second: seq<int>) returns (result: seq<int>)

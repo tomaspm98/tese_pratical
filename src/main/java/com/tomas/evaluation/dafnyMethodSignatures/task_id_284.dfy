@@ -1,0 +1,1 @@
+method AllElementsEqual(a: array<int>, n: int) returns (result: bool)

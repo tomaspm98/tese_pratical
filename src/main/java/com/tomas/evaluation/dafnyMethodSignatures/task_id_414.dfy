@@ -1,0 +1,1 @@
+method AnyValueExists(seq1: seq<int>, seq2: seq<int>) returns (result: bool)
