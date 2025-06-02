@@ -15,7 +15,7 @@ import java.util.*;
 public class AlloyRunner {
 
     private DafnyToAlloyConverter dafnyToAlloyConverter;
-    private static final int NUMBER_OF_INPUTS_FROM_ALLOY = 100;
+    private static final int NUMBER_OF_INPUTS_FROM_ALLOY = 10;
 
     public AlloyRunner(DafnyToAlloyConverter dafnyToAlloyConverter) {
         this.dafnyToAlloyConverter = dafnyToAlloyConverter;
@@ -60,7 +60,12 @@ public class AlloyRunner {
                                                     array.put(index, valueConverted);
                                                 } catch (NumberFormatException e) {
                                                     String valueConverted = value.split("\\$")[0];
-                                                    typeString = typeString + valueConverted;
+                                                    if (valueConverted.equals("boolean/True") || valueConverted.equals("boolean/False")) {
+                                                        valueConverted = valueConverted.replace("boolean/", "");
+                                                        array.put(index, valueConverted);
+                                                    } else {
+                                                        typeString = typeString + valueConverted;
+                                                    }
                                                 }
                                             }
                                         }
@@ -86,6 +91,7 @@ public class AlloyRunner {
                     solution = solution.next();
                 } else {
                     System.out.println("UNSATISFIABLE!");
+                    break;
                 }
             }
         } catch (Err e) {

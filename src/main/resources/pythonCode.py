@@ -12,9 +12,18 @@ def main():
         print("Usage: python script.py <number>")
         sys.exit(1)
     
-    number = int(sys.argv[1])
+    number_str = sys.argv[1]
+    try:
+        number = int(number_str)
+    except ValueError:
+        print("Please provide a valid integer.")
+        sys.exit(1)
+    
     result = is_Perfect_Square(number)
-    print((result,)) if result else print(False)
+    if result:
+        print("True")
+    else:
+        print("False")
 
 if __name__ == "__main__":
     main()
