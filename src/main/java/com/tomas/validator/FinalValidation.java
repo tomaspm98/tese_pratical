@@ -49,11 +49,6 @@ public class FinalValidation {
                 if (output.contains("(") && output.contains(")") && !output.contains("Traceback")) {
                     pairOutput = true;
                 }
-                if (output.equals("False")) {
-                    output = "false";
-                } else if (output.equals("True")) {
-                    output = "true";
-                }
                 String postcondition_replaced;
                 if (pairOutput) {
                     String processedOutput = output.replaceAll("[()]", "");
@@ -66,6 +61,11 @@ public class FinalValidation {
                                     singlePostcondition= transformDafnyCondition(singlePostcondition);
                                     singlePostcondition = singlePostcondition.replaceAll(outputVarNames.get(i), outputs[i]);
                                 } else {
+                                    if (outputs[i].equals("False")) {
+                                        outputs[i] = "false";
+                                    } else if (outputs[i].equals("True")) {
+                                        outputs[i] = "true";
+                                    }
                                     singlePostcondition = singlePostcondition.replaceAll(outputVarNames.get(i), outputs[i]);
                                 }
                             }
@@ -74,6 +74,11 @@ public class FinalValidation {
                     }
                     postcondition_replaced = dafnyTranslator.constructOneCondition(postconditionsProcessed);
                 } else {
+                    if (output.equals("False")) {
+                        output = "false";
+                    } else if (output.equals("True")) {
+                        output = "true";
+                    }
                     postcondition_replaced = dafnyTranslator.constructOneCondition(postcondition);
                     if (outputVarNames!=null && !outputVarNames.isEmpty()) {
                         postcondition_replaced = postcondition_replaced.replaceAll(outputVarNames.getFirst(), output);
