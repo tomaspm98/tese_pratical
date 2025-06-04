@@ -162,16 +162,6 @@ public class FinalValidation {
         }
         return condition;
     }
-
-    public static void main(String[] args) {
-        String condition = "volume <= a * b * h / 2;";
-        FinalValidation finalValidation = new FinalValidation(new CodeRunner(), new DafnyTranslator(), new RestTemplate());
-        String transformedCondition = finalValidation.transformDafnyCondition(condition);
-        System.out.println("Transformed condition: " + transformedCondition);
-
-
-    }
-
 }
 
 

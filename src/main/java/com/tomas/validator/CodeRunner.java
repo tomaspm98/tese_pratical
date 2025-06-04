@@ -44,16 +44,4 @@ public class CodeRunner {
         Process process = processBuilder.start();
         return process;
     }
-
-    public static void main(String[] args) throws IOException {
-        Map<String, Object> inputs = new HashMap<>();
-        List<Integer> list = new ArrayList<>();
-        list.add(1);
-        list.add(2);
-        list.add(3);
-        list.add(4);
-        inputs.put("a", list);
-        CodeRunner codeRunner = new CodeRunner();
-        codeRunner.getProcess(inputs);
-    }
 }

@@ -236,33 +236,4 @@ public class SpecsEvaluator {
 
         return result.toString();
     }
-
-    public static void main(String[] args) throws IOException {
-        String code = """
-                predicate IsDigit(c: char)
-                {
-                    48 <= c as int <= 57
-                }
-                
-                
-                method CountDigits(s: string) returns (count: int)
-                    ensures count >= 0
-                    ensures count == | set i: int | 0 <= i < |s| && IsDigit(s[i])|
-                {
-                    var digits := set i: int | 0 <= i < |s| && IsDigit(s[i]);
-                    count := |digits|;
-                }
-                
-                
-                """;
-
-        SpecsEvaluator specsEvaluator = new SpecsEvaluator();
-        String ok = specsEvaluator.generate(
-                "s: array<string>, count: array<int>",
-                "count >= 0 && count == | set i: int | 0 <= i < |s| && IsDigit(s[i])",
-                "count >= 0 && count == | set i: int | 0 <= i < |s| && IsDigit(s[i])",
-                specsEvaluator.extractAuxiliarFunctions(code)
-        );
-        System.out.println(ok);
-    }
 }

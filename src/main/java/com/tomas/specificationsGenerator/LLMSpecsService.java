@@ -50,5 +50,4 @@ public class LLMSpecsService {
             return response.getBody().getResponse();
         }
     }
-
 }

@@ -198,27 +198,4 @@ public class DafnyToAlloyConverter {
                     """, methodName, inputSig, precondition, runCommand);
         }
     }
-
-
-
-
-    public static void main(String[] args) {
-        DafnyTranslator dafnyTranslator = new DafnyTranslator();
-        DafnyToAlloyConverter converter = new DafnyToAlloyConverter(dafnyTranslator);
-        String dafnyCode = """
-                method CountDigits(s: string) returns (count: int)
-                    requires s != ""
-                    ensures count >= 0
-                    ensures count == | set i: int | 0 <= i < |s| && IsDigit(s[i])|
-                {
-                    var digits := set i: int | 0 <= i < |s| && IsDigit(s[i]);
-                    count := |digits|;
-                }
-                
-                
-                """;
-        String alloyModel = converter.convertToAlloyRun(dafnyCode);
-        System.out.println(alloyModel);
-    }
-
 }

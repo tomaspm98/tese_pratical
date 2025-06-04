@@ -100,11 +100,5 @@ public class AlloyRunner {
 
         return inputList;
     }
-
-    public static void main(String[] args) {
-        AlloyRunner alloyRunner = new AlloyRunner(new DafnyToAlloyConverter(new DafnyTranslator()));
-        alloyRunner.runAlloyModel("");
-    }
-
 }
 
