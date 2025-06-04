@@ -19,7 +19,7 @@ public class LLMCodeService {
                         "including just the auxiliar function to solve the problem and the main function (defined with def main():, " +
                         "that just calls the auxiliar function and prints its return value (don't include any additional logic neither output formatting to it). If the return value of the method is a pair, return it in the form '(pair[0], pair[1])'; otherwise just return the output value) " +
                         "that receives the inputs to run the method from sys, and don't use any natural language on the response. " +
-                        "Also, always write the script so that it always uses command-line arguments (i.e sys.argv) to get input and don't use input(). Assume that lists in input are given in this way \"1,2,3\", where the members of the list are separated by commas"+
+                        "Also, always write the script so that it always uses command-line arguments (i.e sys.argv) to get input and don't use input(). Assume that lists in the sys.argv are given in this way \"1,2,3\", where the members of the list are separated by commas"+
                         "\n\nNOW, THIS IS YOUR PYTHON TASK TO SOLVE IN UPPERCASE: ";
     private static final String llmModel = "deepseek-coder-v2:16b";
 

@@ -10,7 +10,7 @@ method FindFirstOdd(a: array<int>) returns (found: bool, value: int)
 {
     var index := 0;
     found := false;
-    value := 0;
+    value := -1;
 
     while (index < a.Length)
         invariant 0 <= index <= a.Length

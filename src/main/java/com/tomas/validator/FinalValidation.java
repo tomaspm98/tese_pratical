@@ -85,10 +85,17 @@ public class FinalValidation {
                     }
                 }
                 for (Map.Entry<String, Object> entry : input.entrySet()) {
-                    postcondition_replaced = postcondition_replaced.replaceAll(
-                            "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",
-                            entry.getValue().toString()
-                    );
+                    if (entry.getValue() instanceof String) {
+                        postcondition_replaced = postcondition_replaced.replaceAll(
+                                "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",
+                                "\"" + entry.getValue() + "\""
+                        );
+                    } else {
+                        postcondition_replaced = postcondition_replaced.replaceAll(
+                                "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",
+                                entry.getValue().toString()
+                        );
+                    }
                 }
                 postcondition_replaced = postcondition_replaced.replaceAll(";$", "");
                 postcondition_replaced = postcondition_replaced.replaceAll("(\\[[^\\[\\]]+])\\.Length", "|$1|");
