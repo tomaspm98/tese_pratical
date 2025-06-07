@@ -28,7 +28,7 @@ public class DafnyToAlloyConverter {
         precondition = precondition.replaceAll("i\\.(\\w+)(\\s*!=\\s*\\[\\s*])", "some input.$1");
         precondition = precondition.replaceAll("(\\w+(?:\\.\\w+)*)\\s*!=\\s*null", "some $1");
         precondition = precondition.replaceAll("(\\w+(?:\\.\\w+)*)\\s*!=\\s*\"\"", "some $1");
-        precondition = precondition.replaceAll("(?<![=!])==", "="); // Em Alloy, == é =
+        precondition = precondition.replaceAll("(?<![=!])==(?=\\s)", "="); // Em Alloy, == é =
         if (precondition.contains("forall")) {
             Pattern pattern = Pattern.compile("forall\\s+([^:]+)::");
             Matcher matcher = pattern.matcher(precondition);

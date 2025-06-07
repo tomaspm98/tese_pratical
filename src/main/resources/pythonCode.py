@@ -1,28 +1,18 @@
 import sys
 
-def is_Even(digit):
-    return digit % 2 == 0
-
-def sum_of_digits(num):
-    return sum([int(d) for d in str(num)])
-
-def is_Diff(n):
-    even_sum = 0
-    odd_sum = 0
-    for digit in map(int, str(n)):
-        if is_Even(digit):
-            even_sum += digit
+def find_First_Missing(array, start, end):
+    while start <= end:
+        mid = (start + end) // 2
+        if array[mid] == mid + 1:
+            start = mid + 1
         else:
-            odd_sum += digit
-    return (even_sum - odd_sum)
+            end = mid - 1
+    return start + 1
 
 def main():
-    n = int(sys.argv[1])
-    result = is_Diff(n)
-    print(result)
+    array = list(map(int, sys.argv[1].split(',')))
+    missing_number = find_First_Missing(array, 0, len(array) - 1)
+    print(missing_number)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <number>")
-    else:
-        main()
+    main()
