@@ -30,11 +30,11 @@ public class FinalValidation {
 
     public double conditionParser(Set<Map<String, Object>> inputsFromAlloy, String message) throws IOException, InterruptedException {
         final int MAX_RETRIES = 3;
-        int retries = 0;
+        int retriesCode = 0;
         boolean realOutput = false;
         boolean pairOutput = false;
         List<String> postconditionsProcessed = new ArrayList<>();
-        while (retries < MAX_RETRIES) {
+        while (retriesCode < MAX_RETRIES) {
             restTemplate.postForObject("http://localhost:8080/code-generator", message, String.class);
             int counter = 0;
             boolean allOutputsValid = true;
@@ -114,7 +114,7 @@ public class FinalValidation {
             if (allOutputsValid) {
                 return (double) counter / inputsFromAlloy.size();
             }
-            retries++;
+            retriesCode++;
         }
         System.out.println("Output was null after " + MAX_RETRIES + " retries.");
         throw new NullOutputException("Output was null after " + MAX_RETRIES + " retries.");

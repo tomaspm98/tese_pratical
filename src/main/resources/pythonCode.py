@@ -1,18 +1,13 @@
 import sys
 
-def find_First_Missing(array, start, end):
-    while start <= end:
-        mid = (start + end) // 2
-        if array[mid] == mid + 1:
-            start = mid + 1
-        else:
-            end = mid - 1
-    return start + 1
+def opposite_Signs(x, y):
+    return (x * y) < 0
 
 def main():
-    array = list(map(int, sys.argv[1].split(',')))
-    missing_number = find_First_Missing(array, 0, len(array) - 1)
-    print(missing_number)
+    x = int(sys.argv[1])
+    y = int(sys.argv[2])
+    result = opposite_Signs(x, y)
+    print(result)
 
 if __name__ == "__main__":
     main()
