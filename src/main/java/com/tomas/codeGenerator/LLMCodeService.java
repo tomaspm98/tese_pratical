@@ -15,7 +15,7 @@ public class LLMCodeService {
 
     private static final String url = "http://localhost:11434/api/generate";
     private static final RestTemplate restTemplate = new RestTemplate();
-    private static final String codeRequest = "Generate code in Python (and only code without comments and examples) to the natural language problem presented below, " +
+    private static final String codeRequest = "You are an expert in the Python programming language. Generate code in Python (and only code without comments and examples) to the natural language problem presented below, " +
                         "including just the auxiliar function to solve the problem and the main function (defined with def main():, " +
                         "that just calls the auxiliar function and prints its return value (don't include any additional logic neither output formatting to it). If the return value of the method is a pair, return it in the form '(pair[0], pair[1])'; otherwise just return the output value) " +
                         "that receives the inputs to run the method from sys, and don't use any natural language on the response. " +

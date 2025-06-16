@@ -124,7 +124,7 @@ public class Evaluation {
     public static void main(String[] args) throws IOException, InterruptedException {
         Evaluation evaluation = new Evaluation();
         JsonReader jsonReader = new JsonReader();
-        List<CodeTask> listCode = jsonReader.readJsonlFile("src/main/java/com/tomas/evaluation/mbpp.jsonl");
+        List<CodeTask> listCode = jsonReader.readJsonlFile("src/main/java/com/tomas/evaluation/mbppEval.jsonl");
         for (CodeTask codeTask : listCode) {
             evaluation.evaluateIndividual(codeTask);
         }

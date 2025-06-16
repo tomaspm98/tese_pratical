@@ -1,4 +1,4 @@
-function sumNegativesTo( a:array<int>, n:int ) : int
+function sumNegativesTo(a:array<int>, n:int) : int
   requires a != null;
   requires 0 <= n && n <= a.Length;
   decreases n;
