@@ -1,0 +1,1 @@
+method StartAndEndWithSameChar(s: string) returns (result: bool)

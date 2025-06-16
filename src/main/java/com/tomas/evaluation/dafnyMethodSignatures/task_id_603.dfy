@@ -1,0 +1,1 @@
+method LucidNumbers(n: int) returns (lucid: seq<int>)

@@ -1,0 +1,1 @@
+method GetFirstElements(lst: seq<seq<int>>) returns (result: seq<int>)

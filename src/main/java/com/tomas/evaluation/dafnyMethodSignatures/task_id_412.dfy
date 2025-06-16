@@ -1,0 +1,1 @@
+method RemoveOddNumbers(arr: array<int>) returns (evenList: seq<int>)

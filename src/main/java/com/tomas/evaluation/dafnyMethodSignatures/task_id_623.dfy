@@ -1,0 +1,1 @@
+method PowerOfListElements(l: seq<int>, n: int) returns (result: seq<int>)

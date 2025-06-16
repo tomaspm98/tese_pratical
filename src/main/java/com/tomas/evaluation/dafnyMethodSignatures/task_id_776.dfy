@@ -1,0 +1,1 @@
+method CountVowelNeighbors(s: string) returns (count: int)

@@ -1,0 +1,1 @@
+method Swap(a: int, b: int) returns (result: seq<int>)

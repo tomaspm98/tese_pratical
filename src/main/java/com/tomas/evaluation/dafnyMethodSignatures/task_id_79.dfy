@@ -1,0 +1,1 @@
+method IsLengthOdd(s: string) returns (result: bool)

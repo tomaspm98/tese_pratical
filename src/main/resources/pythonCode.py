@@ -1,20 +1,16 @@
 import sys
-import math
 
-def is_Perfect_Square(n):
-    if n < 0:
-        return False
-    root = int(math.sqrt(n))
-    return root * root == n
+def check_smaller(test_tup1, test_tup2):
+    for i in range(len(test_tup1)):
+        if test_tup1[i] <= test_tup2[i]:
+            return False
+    return True
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python script.py <number>")
-        sys.exit(1)
-    
-    number = int(sys.argv[1])
-    result = is_Perfect_Square(number)
-    print((result,)) if result else print(False)
+    test_tup1 = list(map(int, sys.argv[1].split(',')))
+    test_tup2 = list(map(int, sys.argv[2].split(',')))
+    result = check_smaller(test_tup1, test_tup2)
+    print(result)
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,1 @@
+method CountIdenticalPositions(a: seq<int>, b: seq<int>, c: seq<int>) returns (count: int)

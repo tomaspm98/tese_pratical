@@ -7,7 +7,6 @@ import com.tomas.validator.FinalValidation;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,14 +32,6 @@ public class UserInput {
     @PostMapping
     public InputResponse userInput(@RequestBody List<String> message) throws IOException {
         String specs = restTemplate.postForObject("http://localhost:8080/specs-generator", message.getFirst(), String.class);
-        /*String specs = " ```dafny\n" +
-                "method FindKthElement(arr: array<int>, k: int) returns (elem: int)\n" +
-                "  requires 0 <= k && k < arr.Length\n" +
-                "  ensures elem == arr[k]\n" +
-                "{\n" +
-                "  // Logic to find the kth element in the given array\n" +
-                "}\n" +
-                "```";*/
         double result;
         try {
             Set<Map<String,Object>> inputsFromAlloy = alloyRunner.runAlloyModel(specs);
@@ -60,6 +51,4 @@ public class UserInput {
         String code = Files.readString(Path.of("src/main/resources/pythonCode.py"));
         return new InputResponse(result, code, specs);
     }
-
-
 }

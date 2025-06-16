@@ -1,1 +1,1 @@
-method FindFirstOdd(a: array<int>) returns (found: bool, index: int)
+method FindFirstOdd(a: array<int>) returns (found: bool, value: int)

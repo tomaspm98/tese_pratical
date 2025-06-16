@@ -1,0 +1,1 @@
+method ArrayToSeq(a: array<int>) returns (s: seq<int>)

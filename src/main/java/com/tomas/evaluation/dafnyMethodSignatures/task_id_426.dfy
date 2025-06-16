@@ -1,0 +1,1 @@
+method FilterOddNumbers(arr: array<int>) returns (oddList: seq<int>)

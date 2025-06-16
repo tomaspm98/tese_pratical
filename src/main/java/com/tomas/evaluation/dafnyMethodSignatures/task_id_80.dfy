@@ -1,0 +1,1 @@
+method TetrahedralNumber(n: int) returns (t: int)

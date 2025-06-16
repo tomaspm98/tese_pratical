@@ -1,0 +1,1 @@
+method CountTrue(a: array<bool>) returns (result: int)

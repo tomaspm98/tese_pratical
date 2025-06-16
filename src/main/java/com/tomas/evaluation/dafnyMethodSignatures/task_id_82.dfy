@@ -1,0 +1,1 @@
+method SphereVolume(radius: real) returns (volume: real)

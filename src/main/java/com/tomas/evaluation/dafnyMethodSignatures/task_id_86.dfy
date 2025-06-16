@@ -1,0 +1,1 @@
+method CenteredHexagonalNumber(n: int) returns (result: int)

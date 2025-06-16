@@ -1,0 +1,1 @@
+method ContainsSequence(list: seq<seq<int>>, sub: seq<int>) returns (result: bool)

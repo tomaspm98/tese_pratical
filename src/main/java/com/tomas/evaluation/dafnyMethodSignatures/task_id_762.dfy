@@ -1,0 +1,1 @@
+method IsMonthWith30Days(month: int) returns (result: bool)

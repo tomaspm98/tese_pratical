@@ -1,0 +1,1 @@
+method NthNonagonalNumber(n: int) returns (number: int)

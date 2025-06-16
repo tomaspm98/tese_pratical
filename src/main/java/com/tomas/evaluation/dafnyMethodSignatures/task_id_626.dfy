@@ -1,0 +1,1 @@
+method AreaOfLargestTriangleInSemicircle(radius: int) returns (area: int)

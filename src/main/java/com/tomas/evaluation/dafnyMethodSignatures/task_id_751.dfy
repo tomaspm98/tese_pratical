@@ -1,0 +1,1 @@
+method IsMinHeap(a: array<int>) returns (result: bool)

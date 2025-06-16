@@ -1,0 +1,1 @@
+method SplitStringIntoChars(s: string) returns (v: seq<char>)

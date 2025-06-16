@@ -1,0 +1,1 @@
+method ExtractRearChars(l: seq<string>) returns (r: seq<char>)

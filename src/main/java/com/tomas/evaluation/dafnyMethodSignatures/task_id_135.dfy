@@ -1,0 +1,1 @@
+method NthHexagonalNumber(n: int) returns (hexNum: int)

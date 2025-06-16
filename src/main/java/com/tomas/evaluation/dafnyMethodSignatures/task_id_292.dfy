@@ -1,0 +1,1 @@
+method Quotient(a: int, b: int) returns (result: int)

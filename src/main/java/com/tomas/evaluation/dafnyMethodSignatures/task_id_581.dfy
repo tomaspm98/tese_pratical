@@ -1,0 +1,1 @@
+method SquarePyramidSurfaceArea(baseEdge: int, height: int) returns (area: int)

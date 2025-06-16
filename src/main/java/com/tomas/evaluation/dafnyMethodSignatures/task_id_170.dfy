@@ -1,0 +1,1 @@
+method SumInRange(a: array<int>, start: int, end: int) returns (sum: int)

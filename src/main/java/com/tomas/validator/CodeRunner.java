@@ -24,10 +24,15 @@ public class CodeRunner {
         command.add("python");
         command.add("src/main/resources/pythonCode.py");
         for (Map.Entry<String, Object> entry : inputsFromAlloy.entrySet()) {
-            if (entry.getValue() instanceof ArrayList<?>) {
-                for (Object item : (ArrayList<?>) entry.getValue()) {
-                    command.add(item.toString());
+            if (entry.getValue() instanceof ArrayList<?> list) {
+                StringBuilder listSeparatedByCommas = new StringBuilder();
+                for (int i = 0; i < list.size(); i++) {
+                    listSeparatedByCommas.append(list.get(i).toString());
+                    if (i < list.size() - 1) {
+                        listSeparatedByCommas.append(",");
+                    }
                 }
+                command.add(listSeparatedByCommas.toString());
             } else {
                 command.add(entry.getValue().toString());
             }
@@ -38,17 +43,5 @@ public class CodeRunner {
 
         Process process = processBuilder.start();
         return process;
-    }
-
-    public static void main(String[] args) throws IOException {
-        Map<String, Object> inputs = new HashMap<>();
-        List<Integer> list = new ArrayList<>();
-        list.add(1);
-        list.add(2);
-        list.add(3);
-        list.add(4);
-        inputs.put("a", list);
-        CodeRunner codeRunner = new CodeRunner();
-        codeRunner.getProcess(inputs);
     }
 }

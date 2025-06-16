@@ -1,0 +1,1 @@
+method FindOddNumbers(arr: array<int>) returns (oddList: seq<int>)

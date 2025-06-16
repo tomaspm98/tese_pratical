@@ -1,0 +1,1 @@
+method MedianOfThree(a: int, b: int, c: int) returns (median: int)

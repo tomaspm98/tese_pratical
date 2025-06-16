@@ -1,0 +1,1 @@
+method IsBreakEven(costPrice: int, sellingPrice: int) returns (result: bool)

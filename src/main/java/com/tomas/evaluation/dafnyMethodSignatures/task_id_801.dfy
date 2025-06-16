@@ -1,0 +1,1 @@
+method CountEqualNumbers(a: int, b: int, c: int) returns (count: int)

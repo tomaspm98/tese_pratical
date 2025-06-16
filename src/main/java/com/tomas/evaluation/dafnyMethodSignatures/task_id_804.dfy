@@ -1,0 +1,1 @@
+method IsProductEven(a: array<int>) returns (result: bool)

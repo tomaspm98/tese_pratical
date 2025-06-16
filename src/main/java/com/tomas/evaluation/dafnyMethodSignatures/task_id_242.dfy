@@ -1,0 +1,1 @@
+method CountCharacters(s: string) returns (count: int)

@@ -1,0 +1,1 @@
+method Max(a: int, b: int) returns (maxValue: int)

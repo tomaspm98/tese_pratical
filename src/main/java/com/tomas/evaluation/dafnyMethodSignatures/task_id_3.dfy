@@ -1,0 +1,1 @@
+method IsNonPrime(n: int) returns (result: bool)

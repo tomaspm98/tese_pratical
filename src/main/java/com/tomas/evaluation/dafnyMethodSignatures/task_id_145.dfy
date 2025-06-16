@@ -1,0 +1,1 @@
+method MaxDifference(a: array<int>) returns (diff: int)

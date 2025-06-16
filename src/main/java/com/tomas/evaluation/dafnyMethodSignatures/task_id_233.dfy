@@ -1,0 +1,1 @@
+method CylinderLateralSurfaceArea(radius: real, height: real) returns (area: real)

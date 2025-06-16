@@ -1,0 +1,1 @@
+method SquarePerimeter(side: int) returns (perimeter: int)

@@ -1,0 +1,1 @@
+method CountUppercase(s: string) returns (count: int)

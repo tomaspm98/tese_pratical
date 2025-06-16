@@ -1,0 +1,1 @@
+method SumMinMax(a: array<int>) returns (sum: int)

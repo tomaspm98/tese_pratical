@@ -1,0 +1,1 @@
+method ElementAtIndexAfterRotation(l: seq<int>, n: int, index: int) returns (element: int)

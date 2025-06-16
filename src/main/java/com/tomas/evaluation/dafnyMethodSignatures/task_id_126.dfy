@@ -1,0 +1,1 @@
+method SumOfCommonDivisors(a: int, b: int) returns (sum: int)

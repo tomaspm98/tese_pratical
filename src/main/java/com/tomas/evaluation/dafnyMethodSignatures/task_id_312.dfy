@@ -1,0 +1,1 @@
+method ConeVolume(radius: real, height: real) returns (volume: real)

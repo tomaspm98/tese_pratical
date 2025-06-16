@@ -1,0 +1,1 @@
+method IsArmstrong(n: int) returns (result: bool)

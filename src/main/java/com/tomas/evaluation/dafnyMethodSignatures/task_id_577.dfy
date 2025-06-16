@@ -1,0 +1,1 @@
+method FactorialOfLastDigit(n: int) returns (fact: int)

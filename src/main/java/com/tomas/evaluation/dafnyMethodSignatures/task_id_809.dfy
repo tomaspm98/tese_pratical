@@ -1,0 +1,1 @@
+method IsSmaller(a: seq<int>, b: seq<int>) returns (result: bool)

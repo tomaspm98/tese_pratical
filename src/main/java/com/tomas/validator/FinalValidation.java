@@ -30,11 +30,11 @@ public class FinalValidation {
 
     public double conditionParser(Set<Map<String, Object>> inputsFromAlloy, String message) throws IOException, InterruptedException {
         final int MAX_RETRIES = 3;
-        int retries = 0;
+        int retriesCode = 0;
         boolean realOutput = false;
         boolean pairOutput = false;
         List<String> postconditionsProcessed = new ArrayList<>();
-        while (retries < MAX_RETRIES) {
+        while (retriesCode < MAX_RETRIES) {
             restTemplate.postForObject("http://localhost:8080/code-generator", message, String.class);
             int counter = 0;
             boolean allOutputsValid = true;
@@ -49,11 +49,6 @@ public class FinalValidation {
                 if (output.contains("(") && output.contains(")") && !output.contains("Traceback")) {
                     pairOutput = true;
                 }
-                if (output.equals("False")) {
-                    output = "false";
-                } else if (output.equals("True")) {
-                    output = "true";
-                }
                 String postcondition_replaced;
                 if (pairOutput) {
                     String processedOutput = output.replaceAll("[()]", "");
@@ -66,6 +61,11 @@ public class FinalValidation {
                                     singlePostcondition= transformDafnyCondition(singlePostcondition);
                                     singlePostcondition = singlePostcondition.replaceAll(outputVarNames.get(i), outputs[i]);
                                 } else {
+                                    if (outputs[i].equals("False")) {
+                                        outputs[i] = "false";
+                                    } else if (outputs[i].equals("True")) {
+                                        outputs[i] = "true";
+                                    }
                                     singlePostcondition = singlePostcondition.replaceAll(outputVarNames.get(i), outputs[i]);
                                 }
                             }
@@ -74,16 +74,28 @@ public class FinalValidation {
                     }
                     postcondition_replaced = dafnyTranslator.constructOneCondition(postconditionsProcessed);
                 } else {
+                    if (output.equals("False")) {
+                        output = "false";
+                    } else if (output.equals("True")) {
+                        output = "true";
+                    }
                     postcondition_replaced = dafnyTranslator.constructOneCondition(postcondition);
                     if (outputVarNames!=null && !outputVarNames.isEmpty()) {
                         postcondition_replaced = postcondition_replaced.replaceAll(outputVarNames.getFirst(), output);
                     }
                 }
                 for (Map.Entry<String, Object> entry : input.entrySet()) {
-                    postcondition_replaced = postcondition_replaced.replaceAll(
-                            "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",
-                            entry.getValue().toString()
-                    );
+                    if (entry.getValue() instanceof String) {
+                        postcondition_replaced = postcondition_replaced.replaceAll(
+                                "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",
+                                "\"" + entry.getValue() + "\""
+                        );
+                    } else {
+                        postcondition_replaced = postcondition_replaced.replaceAll(
+                                "(?<![a-zA-Z0-9_])" + entry.getKey() + "(?![a-zA-Z0-9_])",
+                                entry.getValue().toString()
+                        );
+                    }
                 }
                 postcondition_replaced = postcondition_replaced.replaceAll(";$", "");
                 postcondition_replaced = postcondition_replaced.replaceAll("(\\[[^\\[\\]]+])\\.Length", "|$1|");
@@ -102,7 +114,7 @@ public class FinalValidation {
             if (allOutputsValid) {
                 return (double) counter / inputsFromAlloy.size();
             }
-            retries++;
+            retriesCode++;
         }
         System.out.println("Output was null after " + MAX_RETRIES + " retries.");
         throw new NullOutputException("Output was null after " + MAX_RETRIES + " retries.");
@@ -150,16 +162,6 @@ public class FinalValidation {
         }
         return condition;
     }
-
-    public static void main(String[] args) {
-        String condition = "volume <= a * b * h / 2;";
-        FinalValidation finalValidation = new FinalValidation(new CodeRunner(), new DafnyTranslator(), new RestTemplate());
-        String transformedCondition = finalValidation.transformDafnyCondition(condition);
-        System.out.println("Transformed condition: " + transformedCondition);
-
-
-    }
-
 }
 
 

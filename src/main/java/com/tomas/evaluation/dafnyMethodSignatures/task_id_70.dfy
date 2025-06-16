@@ -1,0 +1,1 @@
+method AllSequencesEqualLength(sequences: seq<seq<int>>) returns (result: bool)

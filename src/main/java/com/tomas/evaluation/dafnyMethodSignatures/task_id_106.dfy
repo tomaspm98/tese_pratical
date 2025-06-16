@@ -1,0 +1,1 @@
+method AppendArrayToSeq(s: seq<int>, a: array<int>) returns (r: seq<int>)

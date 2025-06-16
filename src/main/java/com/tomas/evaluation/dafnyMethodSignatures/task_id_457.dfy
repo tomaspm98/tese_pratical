@@ -1,0 +1,1 @@
+method MinLengthSublist(s: seq<seq<int>>) returns (minSublist: seq<int>)

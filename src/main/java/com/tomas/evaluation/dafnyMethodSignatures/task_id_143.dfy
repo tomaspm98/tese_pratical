@@ -1,0 +1,1 @@
+method CountArrays(arrays: seq<array<int>>) returns (count: int)

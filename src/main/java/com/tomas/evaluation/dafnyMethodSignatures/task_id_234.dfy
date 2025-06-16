@@ -1,0 +1,1 @@
+method CubeVolume(size: int) returns (volume: int)
