@@ -167,8 +167,7 @@ public class DafnyToAlloyConverter {
                     isBool = true;
                     break;
                 default:
-                    inputSig.append("\n    ").append(entry.getKey()).append(": ").append(entry.getValue()).append(",");
-                    break;
+                    return String.format("Error: Unsupported type '%s'.", entry.getValue());
             }
         }
         inputSig.setLength(inputSig.length() - 1);

@@ -35,6 +35,9 @@ public class UserInput {
         double result;
         try {
             Set<Map<String,Object>> inputsFromAlloy = alloyRunner.runAlloyModel(specs);
+            if (inputsFromAlloy.isEmpty()) {
+                return new InputResponse(-2.0, "Error: Input type not supported by the system", specs);
+            }
             result = finalValidation.conditionParser(inputsFromAlloy, message.get(1));
         } catch (NullOutputException | NullPointerException | IndexOutOfBoundsException e) {
             System.out.println("Retrying full flow due to: " + e.getMessage());

@@ -24,6 +24,10 @@ public class AlloyRunner {
     public Set<Map<String, Object>> runAlloyModel(String code) {
         String alloyModel = dafnyToAlloyConverter.convertToAlloyRun(code);
 
+        if (alloyModel.contains("Error: Unsupported type")) {
+            return Collections.emptySet();
+        }
+
         Set<Map<String, Object>> inputList = new HashSet<>();
 
         try {
