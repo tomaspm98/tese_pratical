@@ -59,6 +59,14 @@ public class Evaluation {
             return;
         }
 
+        if (consistencyResult == -2.0) {
+            correctSpecs = false;
+            correctCode = false;
+            System.err.println("Error: Not supported");
+            evaluationResultWriter.addResult(codeTask.getTask_id(), correctSpecs, correctCode, consistencyResult, "https://github.com/Mondego/dafny-synthesis/blob/master/MBPP-DFY-50/src/task_id_" + codeTask.getTask_id()+".dfy", "https://github.com/tomaspm98/tese_pratical/blob/main/src/main/java/com/tomas/evaluation/mbpp.jsonl");
+            return;
+        }
+
         if (specsEvaluator.evaluateSpecs(specs, codeTask.getTask_id())) {
             System.out.println("Specs evaluation passed! Problem number " + (codeTask.getTask_id()));
             correctSpecs = true;
