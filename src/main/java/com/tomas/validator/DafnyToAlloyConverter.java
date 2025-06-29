@@ -161,6 +161,11 @@ public class DafnyToAlloyConverter {
                     runCommand = "run {} for 4 seq, 9 Int";
                     isString = true;
                     break;
+                case " char":
+                    inputSig.append("\n    ").append(entry.getKey()).append(": Char,");
+                    runCommand = "run {} for 4 seq, 9 Int";
+                    isString = true;
+                    break;
                 case " array<bool>", " seq<bool>":
                     inputSig.append("\n    ").append(entry.getKey()).append(": seq Bool,");
                     runCommand = "run {} for 4 seq, 9 Int";
